@@ -11,8 +11,8 @@ import cv2
 import numpy
 import ffmpeg
 
-INPUT_FILE = Path('input.txt')
-FRAMES_DIR = Path('./frames')
+INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
+FRAMES_DIR = Path(__file__).parent.resolve() / 'frames'
 FRAMES_DIR.mkdir(exist_ok=True)
 WIDTH = 1280
 HEIGHT = 720
