@@ -41,30 +41,30 @@ with INPUT_FILE.open() as ifp:
         text = line.strip()
         if text == '':
             break
-        print('Parsing:', line)
+        # print('Parsing:', line)
         before, after = text.split('|')
         before_rules[int(after)].add(int(before))
     # for line in TEST_UPDATES.split('\n'):
     while line := ifp.readline():
         manual_updates.append(list(map(int, line.strip().split(','))))
 
-print(before_rules)
-print(manual_updates)
+# print(before_rules)
+# print(manual_updates)
 
 incorrect_updates: list[list[int]] = []
 for update in manual_updates:
-    print('Checking update:', update)
+    # print('Checking update:', update)
     remaining_numbers = set(update)
     for page_number in update:
         remaining_numbers.remove(page_number)
         broken_rules = remaining_numbers.intersection(before_rules[page_number])
         if len(broken_rules) > 0:
-            print('  Violation for', page_number, 'which must occur after', broken_rules)
+            # print('  Violation for', page_number, 'which must occur after', broken_rules)
             incorrect_updates.append(update)
             break
 
 for update in incorrect_updates:
-    print('Fixing update:', update)
+    # print('Fixing update:', update)
     remaining_numbers = set(update)
     i = 0
     while i < len(update):
@@ -72,26 +72,26 @@ for update in incorrect_updates:
         remaining_numbers.remove(page_number)
         broken_rules = remaining_numbers.intersection(before_rules[page_number])
         if len(broken_rules) > 0:
-            print('  Violation for', page_number, 'which must occur after', broken_rules)
+            # print('  Violation for', page_number, 'which must occur after', broken_rules)
             del update[i]
             update.append(page_number)
             remaining_numbers.add(page_number)
         else:
             i += 1
-    print('Fixed update:', update)
+    # print('Fixed update:', update)
 
 middle_page_number_sum = 0
 for update in incorrect_updates:
-    print('Re-checking update:', update)
+    # print('Re-checking update:', update)
     remaining_numbers = set(update)
     for page_number in update:
         remaining_numbers.remove(page_number)
         broken_rules = remaining_numbers.intersection(before_rules[page_number])
         if len(broken_rules) > 0:
-            print('  Violation for', page_number, 'which must occur after', broken_rules)
+            # print('  Violation for', page_number, 'which must occur after', broken_rules)
             break
     else:
-        print('No rules broken, adding', update[len(update) // 2], 'for:', update)
+        # print('No rules broken, adding', update[len(update) // 2], 'for:', update)
         middle_page_number_sum += update[len(update) // 2]
 
 print('Sum of middle page numbers for corrected updates:', middle_page_number_sum)
