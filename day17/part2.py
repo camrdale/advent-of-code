@@ -1,10 +1,8 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.runner import Part
 
-from pathlib import Path
-
-from shared import parse
-
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
+from .shared import parse
 
 
 def to_bits(num: int) -> tuple[int, int, int]:
@@ -41,64 +39,40 @@ def find_bits(remaining_instructions: list[int], bits_so_far: list[int]) -> list
         c = to_num(right_shift(bits_so_far + list(a_bits), r))
         b = r ^ 5
         if (b ^ c) == instruction:
-            print(prefix, 
-                  f'For instruction {instruction} (r={r}, c={c}, b={b}), found bits for A of {a}:', 
-                  ''.join(map(str, a_bits)))
+            log(DEBUG,
+                prefix, 
+                f'For instruction {instruction} (r={r}, c={c}, b={b}), found bits for A of {a}:', 
+                ''.join(map(str, a_bits)))
             result = find_bits(remaining_instructions[:-1], bits_so_far + list(a_bits))
             if result is not None:
                 return result
             else:
-                print(prefix, 
-                      f'Failed to find continuation for instruction {instruction} (r={r}, c={c}, b={b}), found bits for A of {a}:', 
-                      ''.join(map(str, a_bits)))
+                log(DEBUG,
+                    prefix, 
+                    f'Failed to find continuation for instruction {instruction} (r={r}, c={c}, b={b}), found bits for A of {a}:', 
+                    ''.join(map(str, a_bits)))
 
-    print(prefix, f'Failed to find instruction for {instruction}')
+    log(DEBUG, prefix, f'Failed to find instruction for {instruction}')
     return None    
 
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        state, program = parse(
-                ifp.readlines()
-            )
+class Part2(Part):
+    def run(self, parser: InputParser) -> int | None:
+        state, program = parse(parser.get_input())
 
-    bits = find_bits(program.instructions, [])
+        bits = find_bits(program.instructions, [])
 
-    if bits is None:
-        print(f'Failed to find instructions for {program.instructions}')
-    else:    
-        a = to_num(tuple(bits))
-        state.A = a
-        program.execute(state)
-        print('Program instructions are:\t\t', ','.join(map(str, program.instructions)))
-        print('For A =', a, 'program output:\t', ','.join(map(str, state.out)))
-
-
-if __name__ == '__main__':
-    main()
+        if bits is None:
+            log(INFO, f'Failed to find instructions for {program.instructions}')
+        else:
+            a = to_num(tuple(bits))
+            state.A = a
+            program.execute(state)
+            log(INFO, 'Program instructions are:\t\t', ','.join(map(str, program.instructions)))
+            log(RESULT, 'For A =', a, 'program output:\t', ','.join(map(str, state.out)))
+            return a
 
 
-"""
-2,4  B = A % 8
-1,3  B = B XOR 3
-7,5  C = A // 2^B
-1,5  B = B XOR 5
-0,3  A = A // 8
-4,2  B = B XOR C
-5,5  print B % 8
-3,0  Jump to 0
+part = Part2()
 
-B = ((A % 8) XOR 3) XOR 5
-C = A // 2^((A % 8) XOR 3)
-A = A // 8
-B = B XOR C
-print B % 8
-
-
-0,3  A = A // 8
-5,4  print A % 8
-3,0  Jump to 0
-
-011 100 101 011 000 000
-
-"""
+part.add_result(216584205979245)

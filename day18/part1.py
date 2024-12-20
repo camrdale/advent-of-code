@@ -1,11 +1,37 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, DEBUG
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import ReindeerMaze
 
-from shared import ReindeerMaze, Coordinate
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part1(Part):
+    def run(self, parser: InputParser) -> int | None:
+        bytes = parser.get_input_coords()
+        width: int
+        height: int
+        num_fall: int
+        width, height, num_fall = parser.get_additional_params()
+
+        maze = ReindeerMaze(width, height)
+
+        maze.add_walls(bytes[:num_fall])
+
+        path = maze.lowest_score_path()
+
+        if path is None:
+            print('ERROR failed to find path through the maze')
+            return None
+
+        log(DEBUG, maze.print_path(path))
+
+        log(RESULT, 'Found lowest score paths with score:', path.score)
+        return path.score
+
+
+part = Part1()
+
+part.add_result(22, """
 5,4
 4,2
 4,5
@@ -31,32 +57,6 @@ TEST_INPUT = """
 0,5
 1,6
 2,0
-"""
+""", 7, 7, 12)
 
-
-def main():
-    with INPUT_FILE.open() as ifp:
-        maze, num_fall, input = ReindeerMaze(
-                # 7, 7), 12, TEST_INPUT.split('\n')
-                71, 71), 1024, ifp.readlines()
-
-    bytes = [
-        Coordinate(*map(int, line.strip().split(',')))
-        for line in input
-        if len(line.strip()) > 0]
-
-    maze.add_walls(bytes[:num_fall])
-
-    path = maze.lowest_score_path()
-
-    if path is None:
-        print('ERROR failed to find path through the maze')
-        exit(1)
-
-    # print(maze.print_path(path))
-
-    print('Found lowest score paths with score:', path.score)
-
-
-if __name__ == '__main__':
-    main()
+part.add_result(356, None, 71, 71, 1024)

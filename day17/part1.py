@@ -1,30 +1,30 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import parse
 
-from shared import parse
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part1(Part):
+    def run(self, parser: InputParser) -> str:
+        state, program = parse(parser.get_input())
+
+        program.execute(state)
+
+        result = ','.join(map(str, state.out))
+        log(RESULT, 'Program output:', result)
+
+        return result
+
+
+part = Part1()
+
+part.add_result('4,6,3,5,6,3,5,2,1,0', """
 Register A: 729
 Register B: 0
 Register C: 0
 
 Program: 0,1,5,4,3,0
-"""
+""")
 
-
-def main():
-    with INPUT_FILE.open() as ifp:
-        state, program = parse(
-                # TEST_INPUT.split('\n')
-                ifp.readlines()
-            )
-
-    program.execute(state)
-
-    print('Program output:', ','.join(map(str, state.out)))
-
-
-if __name__ == '__main__':
-    main()
+part.add_result('5,1,3,4,3,7,2,1,7')

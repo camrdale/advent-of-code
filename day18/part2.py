@@ -1,11 +1,43 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import ReindeerMaze, Coordinate
 
-from shared import ReindeerMaze, Coordinate
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part2(Part):
+    def run(self, parser: InputParser) -> Coordinate | None:
+        bytes = parser.get_input_coords()
+        width: int
+        height: int
+        num_fall: int
+        width, height, num_fall = parser.get_additional_params()
+
+        maze = ReindeerMaze(width, height)
+
+        maze.add_walls(bytes[:num_fall])
+
+        path = maze.lowest_score_path()
+
+        if path is None:
+            print('ERROR failed to find initial path through the maze')
+            return None
+
+        next_to_fall = num_fall
+        while next_to_fall < len(bytes):
+            next_byte = bytes[next_to_fall]
+            maze.add_walls((next_byte,))
+            if next_byte in path.previous:
+                path = maze.lowest_score_path()
+                if path is None:
+                    log(RESULT, f'Path is not possible after {next_to_fall} byte: {next_byte}')
+                    return next_byte
+            next_to_fall += 1
+
+
+part = Part2()
+
+part.add_result(Coordinate(6,1), """
 5,4
 4,2
 4,5
@@ -31,39 +63,6 @@ TEST_INPUT = """
 0,5
 1,6
 2,0
-"""
+""", 7, 7, 12)
 
-
-def main():
-    with INPUT_FILE.open() as ifp:
-        maze, num_fall, input = ReindeerMaze(
-                # 7, 7), 12, TEST_INPUT.split('\n')
-                71, 71), 1024, ifp.readlines()
-
-    bytes = [
-        Coordinate(*map(int, line.strip().split(',')))
-        for line in input
-        if len(line.strip()) > 0]
-
-    maze.add_walls(bytes[:num_fall])
-
-    path = maze.lowest_score_path()
-
-    if path is None:
-        print('ERROR failed to find initial path through the maze')
-        exit(1)
-
-    next_to_fall = num_fall
-    while next_to_fall < len(bytes):
-        next_byte = bytes[next_to_fall]
-        maze.add_walls((next_byte,))
-        if next_byte in path.previous:
-            path = maze.lowest_score_path()
-            if path is None:
-                print(f'Path is not possible after {next_to_fall} byte: {next_byte}')
-                break
-        next_to_fall += 1
-
-
-if __name__ == '__main__':
-    main()
+part.add_result(Coordinate(22,33), None, 71, 71, 1024)
