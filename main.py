@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import sys
 
-from aoc.log import set_log_level, RESULT
+from aoc.log import set_log_level, RESULT, INFO
 from aoc.runner import Part
 
 DAY_DIR = re.compile(r'^day([0-9]*)$')
@@ -88,3 +88,5 @@ if __name__ == '__main__':
     run_today()
     # run_day(17)
     # run_all()
+    set_log_level(INFO)
+    # run_part(21, 2)
