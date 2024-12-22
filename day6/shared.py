@@ -6,6 +6,8 @@ import cv2
 import numpy
 import ffmpeg
 
+from aoc.map import Coordinate
+
 FRAMES_DIR = Path(__file__).parent.resolve() / 'frames'
 FRAMES_DIR.mkdir(exist_ok=True)
 WIDTH = 1280
@@ -21,6 +23,7 @@ UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
+
 
 class Visualizer:
     def __init__(self, width: int, height: int) -> None:
@@ -38,7 +41,7 @@ class Visualizer:
 
     def draw_obstacle(
             self, 
-            pos: tuple[int, int], 
+            pos: Coordinate, 
             ) -> None:
         x = self.cell_width * pos[0]
         y = self.cell_height * pos[1]
@@ -54,7 +57,7 @@ class Visualizer:
 
     def draw_visited(
             self, 
-            pos: tuple[int, int], 
+            pos: Coordinate, 
             directions: set[int]
             ) -> None:
         x = self.cell_width * pos[0]
@@ -80,10 +83,9 @@ class Visualizer:
         self.ctx.stroke()
         self.ctx.new_path()
 
-
     def draw_guard(
             self,
-            pos: tuple[int, int], 
+            pos: Coordinate, 
             direction: int, 
             offset: tuple[float, float] = (0.0, 0.0)) -> None:
         x = self.cell_width * (pos[0] + offset[0])
@@ -123,9 +125,9 @@ class Visualizer:
 
     def draw_board(
             self,
-            obstacles: set[tuple[int, int]], 
-            visited_positions: set[tuple[int, int, int]], 
-            current_pos: tuple[int, int], 
+            obstacles: set[Coordinate], 
+            visited_positions: set[tuple[Coordinate, int]], 
+            current_pos: Coordinate, 
             direction: int, 
             delay: int) -> None:
         num_frames = delay * FPS // 2
@@ -133,9 +135,9 @@ class Visualizer:
             self.clear_screen()
             for pos in obstacles:
                 self.draw_obstacle(pos)
-            positions: dict[tuple[int, int], set[int]] = defaultdict(set)
+            positions: dict[Coordinate, set[int]] = defaultdict(set)
             for pos in visited_positions:
-                positions[(pos[0], pos[1])].add(pos[2])
+                positions[pos[0]].add(pos[1])
             for pos, directions in positions.items():
                 self.draw_visited(pos, directions)
             self.draw_guard(current_pos, direction)
@@ -146,10 +148,10 @@ class Visualizer:
 
     def animate_movement(
             self,
-            obstacles: set[tuple[int, int]], 
-            visited_positions: set[tuple[int, int, int]], 
-            current_pos: tuple[int, int], 
-            next_pos: tuple[int, int], 
+            obstacles: set[Coordinate], 
+            visited_positions: set[tuple[Coordinate, int]], 
+            current_pos: Coordinate, 
+            next_pos: Coordinate, 
             direction: int, 
             delay: float) -> None:
         num_frames = int(delay * FPS)
@@ -157,10 +159,10 @@ class Visualizer:
             self.clear_screen()
             for pos in obstacles:
                 self.draw_obstacle(pos)
-            positions: dict[tuple[int, int], set[int]] = defaultdict(set)
+            positions: dict[Coordinate, set[int]] = defaultdict(set)
             for pos in visited_positions:
                 if pos != current_pos + (direction,):
-                    positions[(pos[0], pos[1])].add(pos[2])
+                    positions[pos[0]].add(pos[1])
             for pos, directions in positions.items():
                 self.draw_visited(pos, directions)
             offset: tuple[float, float] = (

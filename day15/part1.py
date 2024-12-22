@@ -63,18 +63,8 @@ class WarehouseMap(ParsedMap):
 
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
-        input = parser.get_input()
-        map_input: list[str] = []
-        move_input = ''
-        map_time = True
-        for line in input:
-            if map_time:
-                if line == '':
-                    map_time = False
-                else:
-                    map_input.append(line)
-            else:
-                move_input += line
+        map_input, move_input = parser.get_two_part_input()
+        move_input = ''.join(move_input)
 
         map = WarehouseMap(map_input)
 

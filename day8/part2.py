@@ -1,13 +1,62 @@
-#!/usr/bin/python
-
-from collections import defaultdict
 import itertools
-from pathlib import Path
+import string
 
-from shared import Offset, Node
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.map import Coordinate, Offset, ParsedMap
+from aoc.runner import Part
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+
+        map = ParsedMap(input, string.ascii_lowercase + string.ascii_uppercase + ''.join(str(i) for i in range(10)))
+
+        log(DEBUG, map.width, map.height)
+        log(DEBUG, map.features)
+
+        antinodes: set[Coordinate] = set()
+        for typednodes in map.features.values():
+            for node1, node2 in itertools.combinations(typednodes, 2):
+                antinodes.add(node2)
+
+                offset: Offset = node2.difference(node1)
+                antinode = node2.add(offset)
+                while antinode.valid(map.width, map.height):
+                    log(DEBUG, node1, node2, antinode)
+                    antinodes.add(antinode)
+                    antinode = antinode.add(offset)
+
+                offset = offset.negate()
+                antinode = node2.add(offset)
+                while antinode.valid(map.width, map.height):
+                    log(DEBUG, node1, node2, antinode)
+                    antinodes.add(antinode)
+                    antinode = antinode.add(offset)
+
+        log(INFO, antinodes)
+
+        unique_antinodes = len(antinodes)
+        log(RESULT, 'Unique antinode locations:', unique_antinodes)
+        return unique_antinodes
+
+part = Part2()
+
+part.add_result(9, """
+T....#....
+...T......
+.T....#...
+.........#
+..#.......
+..........
+...#......
+..........
+....#.....
+..........
+""")
+
+part.add_result(34, """
 ............
 ........0...
 .....0......
@@ -20,46 +69,6 @@ TEST_INPUT = """
 .........A..
 ............
 ............
-"""
+""")
 
-
-nodes: dict[str, list[Node]] = defaultdict(list)
-
-height = 0
-width = 0
-with INPUT_FILE.open() as ifp:
-    for y, line in enumerate(TEST_INPUT.split()):
-    # for y, line in enumerate(ifp.readlines()):
-        if len(line.strip()) > 0:
-            width = len(line.strip())
-            height += 1
-            for x, c in enumerate(line.strip()):
-                if c == '.':
-                    continue
-                nodes[c].append(Node(x,y))
-
-# print(width, height)
-# print(nodes)
-
-antinodes: set[Node] = set()
-for typednodes in nodes.values():
-    for node1, node2 in itertools.combinations(typednodes, 2):
-        antinodes.add(node2)
-
-        offset: Offset = node2.difference(node1)
-        antinode = node2.add(offset)
-        while antinode.valid(width, height):
-            # print(node1, node2, antinode2)
-            antinodes.add(antinode)
-            antinode = antinode.add(offset)
-
-        offset = offset.negate()
-        antinode = node2.add(offset)
-        while antinode.valid(width, height):
-            # print(node1, node2, antinode2)
-            antinodes.add(antinode)
-            antinode = antinode.add(offset)
-
-# print(antinodes)
-
-print('Unique antinode locations:', len(antinodes))
+part.add_result(1333)

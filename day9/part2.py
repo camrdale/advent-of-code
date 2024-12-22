@@ -1,10 +1,8 @@
-#!/usr/bin/python
-
-from pathlib import Path
 from typing import NamedTuple
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = '2333133121414131402'
+from aoc.input import InputParser
+from aoc.log import log, RESULT, DEBUG, INFO
+from aoc.runner import Part
 
 
 class File(NamedTuple):
@@ -63,20 +61,30 @@ class HardDrive:
         return checksum
 
 
-filemap: list[int] = []
-with INPUT_FILE.open() as ifp:
-    # text = TEST_INPUT
-    text = ifp.readline().strip()
-    filemap = list(map(int, text))
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        filemap = list(map(int, input[0]))
 
-# print(filemap) 
+        log(DEBUG, filemap) 
 
-hard_drive = HardDrive(filemap)
+        hard_drive = HardDrive(filemap)
 
-# print(hard_drive.blocks)
+        log(DEBUG, hard_drive.blocks)
 
-hard_drive.defrag()
+        hard_drive.defrag()
 
-# print(hard_drive.blocks)
+        log(INFO, hard_drive.blocks)
 
-print('Checksum:', hard_drive.checksum())
+        checksum = hard_drive.checksum()
+        log(RESULT, 'Checksum:', checksum)
+        return checksum
+
+
+part = Part2()
+
+part.add_result(2858, """
+2333133121414131402
+""")
+
+part.add_result(6476642796832)

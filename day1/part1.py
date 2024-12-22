@@ -1,5 +1,3 @@
-#!/usr/bin/python
-
 from pathlib import Path
 from collections import defaultdict
 import colorsys
@@ -11,7 +9,10 @@ import cv2
 import numpy
 import ffmpeg
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
+from aoc.input import InputParser
+from aoc.log import log, RESULT, DEBUG
+from aoc.runner import Part
+
 FRAMES_DIR = Path(__file__).parent.resolve() / 'frames'
 FRAMES_DIR.mkdir(exist_ok=True)
 WIDTH = 1280
@@ -21,6 +22,7 @@ MAX_COLOR_H = 300.0 / 360.0
 BACKGROUND_COLOR = (1.0, 1.0, 1.0)
 TEXT_COLOR = (0.0, 0.0, 0.0)
 DONE_TEXT_COLOR = (0.02, 0.66, 0.26)
+
 
 class SortingAlgorithm(ABC):
 
@@ -101,6 +103,7 @@ class QuickSortOperation(NamedTuple):
     high: int  # high index
     i: int  # greater index
     j: int  # iteration index
+
 
 class QuickSort(SortingAlgorithm):
 
@@ -203,99 +206,131 @@ class MergeSort(SortingAlgorithm):
         return False
 
 
-img = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
-nda = numpy.ndarray(shape = (HEIGHT, WIDTH, 4), dtype = numpy.uint8, buffer = img.get_data())
-ctx = cairo.Context(img)
-ffs = [
-    cairo.ToyFontFace('Source Sans Pro Semibold'),
-    cairo.ToyFontFace('Cascadia Mono'),
-    cairo.ToyFontFace('Noto Color Emoji')]
+class Part1(Part):
+    def __init__(self, visualize: bool = True):
+        super().__init__()
+        self.visualize = visualize
 
-left_input: list[int] = []
-right_input: list[int] = []
-with INPUT_FILE.open() as ifp:
-    for line in ifp.readlines():
-        val = line.split()
-        left_input.append(int(val[0]))
-        right_input.append(int(val[1]))
+    def run(self, parser: InputParser) -> int:
+        if self.visualize:
+            img = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
+            nda = numpy.ndarray(shape = (HEIGHT, WIDTH, 4), dtype = numpy.uint8, buffer = img.get_data())
+            ctx = cairo.Context(img)
+            ffs = [
+                cairo.ToyFontFace('Source Sans Pro Semibold'),
+                cairo.ToyFontFace('Cascadia Mono'),
+                cairo.ToyFontFace('Noto Color Emoji')]
+            [f.unlink() for f in FRAMES_DIR.glob("*.png") if f.is_file()]
 
-max_value = max(max(left_input), max(right_input))
-min_value = min(min(left_input), min(right_input))
+        input = parser.get_input()
 
-sorting_algorithms: list[tuple[str, list[int], SortingAlgorithm]] = [
-    ('BubbleSort Left', list(left_input), BubbleSort()),
-    ('BubbleSort Right', list(right_input), BubbleSort()),
-    ('InsertionSort Left', list(left_input), InsertionSort()),
-    ('InsertionSort Right', list(right_input), InsertionSort()),
-    ('MergeSort Left', list(left_input), MergeSort()),
-    ('MergeSort Right', list(right_input), MergeSort()),
-    ('QuickSort Left', list(left_input), QuickSort()),
-    ('QuickSort Right', list(right_input), QuickSort()),
-    ]
+        left_input: list[int] = []
+        right_input: list[int] = []
+        for line in input:
+            val = line.split()
+            left_input.append(int(val[0]))
+            right_input.append(int(val[1]))
 
-for _, to_sort, sorting_algorithm in sorting_algorithms:
-    sorting_algorithm.initialize(to_sort)
+        max_value = max(max(left_input), max(right_input))
+        min_value = min(min(left_input), min(right_input))
 
-frame = 0
-done: dict[str, int] = defaultdict(int)
-while True:
-    all_done = True
-    for desc, to_sort, sorting_algorithm in sorting_algorithms:
-        if not sorting_algorithm.iterate():
-            all_done = False
-        elif desc not in done:
-            done[desc] = frame
+        sorting_algorithms: list[tuple[str, list[int], SortingAlgorithm]] = [
+            ('BubbleSort Left', list(left_input), BubbleSort()),
+            ('BubbleSort Right', list(right_input), BubbleSort()),
+            ('InsertionSort Left', list(left_input), InsertionSort()),
+            ('InsertionSort Right', list(right_input), InsertionSort()),
+            ('MergeSort Left', list(left_input), MergeSort()),
+            ('MergeSort Right', list(right_input), MergeSort()),
+            ('QuickSort Left', list(left_input), QuickSort()),
+            ('QuickSort Right', list(right_input), QuickSort()),
+            ]
 
-    if all_done:
-        break
+        for _, to_sort, sorting_algorithm in sorting_algorithms:
+            sorting_algorithm.initialize(to_sort)
 
-    # Paint the background white (overwriting any previous frame's data)
-    ctx.identity_matrix()
-    ctx.set_source_rgba(*BACKGROUND_COLOR)
-    ctx.paint()
+        frame = 0
+        done: dict[str, int] = defaultdict(int)
+        while True:
+            all_done = True
+            for desc, to_sort, sorting_algorithm in sorting_algorithms:
+                if not sorting_algorithm.iterate():
+                    all_done = False
+                elif desc not in done:
+                    done[desc] = frame
 
-    algorithm_num = 0
-    for desc, to_sort, sorting_algorithm in sorting_algorithms:
-        for i, location_id in enumerate(to_sort):
-            # Use the location ID number to determine the color, using HLS color space
-            rgb = colorsys.hls_to_rgb(
-                MIN_COLOR_H + (MAX_COLOR_H - MIN_COLOR_H) * (location_id - min_value) / (max_value - min_value),
-                0.5, 1.0)
+            if all_done:
+                break
 
-            # Draw a line for the location ID
-            x = 10 + i
-            ctx.move_to(x, 10 + 50*algorithm_num)
-            ctx.line_to(x, 50 + 50*algorithm_num)
-            ctx.set_line_width(1)
-            ctx.set_source_rgba(*rgb)
-            ctx.stroke()
+            # Paint the background white (overwriting any previous frame's data)
+            if self.visualize:
+                ctx.identity_matrix()
+                ctx.set_source_rgba(*BACKGROUND_COLOR)
+                ctx.paint()
 
-        ctx.set_font_face(ffs[0])
-        ctx.set_font_size(24)
-        ctx.move_to(1020, 40 + 50*algorithm_num)
-        ctx.set_source_rgba(*(DONE_TEXT_COLOR if desc in done else TEXT_COLOR))
-        ctx.show_text(desc)
-        ctx.new_path()
+                algorithm_num = 0
+                for desc, to_sort, sorting_algorithm in sorting_algorithms:
+                    for i, location_id in enumerate(to_sort):
+                        # Use the location ID number to determine the color, using HLS color space
+                        rgb = colorsys.hls_to_rgb(
+                            MIN_COLOR_H + (MAX_COLOR_H - MIN_COLOR_H) * (location_id - min_value) / (max_value - min_value),
+                            0.5, 1.0)
+
+                        # Draw a line for the location ID
+                        x = 10 + i
+                        ctx.move_to(x, 10 + 50*algorithm_num)
+                        ctx.line_to(x, 50 + 50*algorithm_num)
+                        ctx.set_line_width(1)
+                        ctx.set_source_rgba(*rgb)
+                        ctx.stroke()
+
+                    ctx.set_font_face(ffs[0])
+                    ctx.set_font_size(24)
+                    ctx.move_to(1020, 40 + 50*algorithm_num)
+                    ctx.set_source_rgba(*(DONE_TEXT_COLOR if desc in done else TEXT_COLOR))
+                    ctx.show_text(desc)
+                    ctx.new_path()
+                    
+                    algorithm_num += 1
+
+                img.write_to_png(str(FRAMES_DIR / ('frame%06d.png' % frame)))
+                cv2.imshow('Visualization', nda)
+                cv2.waitKey(1)
+                frame += 1
+                if frame % 1000 == 0:
+                    log(DEBUG, 'Frame:', frame)
+
+        if self.visualize:
+            cv2.destroyAllWindows()
+
+
+        total_distance = 0
+        for sorted_left, sorted_right in zip(sorting_algorithms[::2], sorting_algorithms[1::2]):
+            algo_name = sorted_left[0].split()[0]
+
+            total_distance = 0
+            for left, right in zip(sorted_left[1], sorted_right[1]):
+                total_distance += abs(left - right)
+
+            log(RESULT, algo_name, 'Total Distance:', total_distance, 'Frames:', done[sorted_left[0]], done[sorted_right[0]])
+
+        if self.visualize:
+            (ffmpeg
+                .input(str(FRAMES_DIR.absolute() / 'frame%06d.png'), framerate=60)
+                .output(str(Path(__file__).parent.resolve() / 'output.mp4'), pix_fmt='yuv420p')
+                .overwrite_output().run())
         
-        algorithm_num += 1
-
-    img.write_to_png(str(FRAMES_DIR / ('frame%06d.png' % frame)))
-    cv2.imshow('Visualization', nda)
-    cv2.waitKey(1)
-    frame += 1
-    if frame % 1000 == 0:
-        print('Frame:', frame)
-
-cv2.destroyAllWindows()
+        return total_distance
 
 
-for sorted_left, sorted_right in zip(sorting_algorithms[::2], sorting_algorithms[1::2]):
-    algo_name = sorted_left[0].split()[0]
+part = Part1(visualize=False)
 
-    total_distance = 0
-    for left, right in zip(sorted_left[1], sorted_right[1]):
-        total_distance += abs(left - right)
+part.add_result(11, """
+3   4
+4   3
+2   5
+1   3
+3   9
+3   3
+""")
 
-    print(algo_name, 'Total Distance:', total_distance, 'Frames:', done[sorted_left[0]], done[sorted_right[0]])
-
-ffmpeg.input(str(FRAMES_DIR.absolute() / 'frame%06d.png'), framerate=60).output('output.mp4', pix_fmt='yuv420p').overwrite_output().run()
+part.add_result(2057374)

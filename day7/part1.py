@@ -1,19 +1,6 @@
-#!/usr/bin/python
-
-from pathlib import Path
-
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
-190: 10 19
-3267: 81 40 27
-83: 17 5
-156: 15 6
-7290: 6 8 6 15
-161011: 16 10 13
-192: 17 8 14
-21037: 9 7 18 13
-292: 11 6 16 20
-"""
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO
+from aoc.runner import Part
 
 
 def find_equation(
@@ -46,24 +33,41 @@ def find_equation(
         remaining_operands[1:])
 
 
-input: dict[int, list[int]] = {}
-with INPUT_FILE.open() as ifp:
-    # for line in TEST_INPUT.split('\n'):
-    for line in ifp.readlines():
-        text = line.strip()
-        if text == '':
-            continue
-        test_value = int(text.split(':')[0])
-        operands = list(map(int, text.split(':')[1].split()))
-        input[test_value] = operands
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        raw_input = parser.get_input()
 
-total_calibration_result = 0
-for test_value, operands in input.items():
-    equation = find_equation(test_value, operands[0], str(operands[0]), operands[1:])
-    if equation is None:
-        print(test_value, 'is not possible')
-    else:
-        print(test_value, '=', equation)
-        total_calibration_result += test_value
+        input: dict[int, list[int]] = {}
+        for line in raw_input:
+            test_value = int(line.split(':')[0])
+            operands = list(map(int, line.split(':')[1].split()))
+            input[test_value] = operands
 
-print('Total calibration result:', total_calibration_result)
+        total_calibration_result = 0
+        for test_value, operands in input.items():
+            equation = find_equation(test_value, operands[0], str(operands[0]), operands[1:])
+            if equation is None:
+                log(INFO, test_value, 'is not possible')
+            else:
+                log(INFO, test_value, '=', equation)
+                total_calibration_result += test_value
+
+        log(RESULT, 'Total calibration result:', total_calibration_result)
+        return total_calibration_result
+
+
+part = Part1()
+
+part.add_result(3749, """
+190: 10 19
+3267: 81 40 27
+83: 17 5
+156: 15 6
+7290: 6 8 6 15
+161011: 16 10 13
+192: 17 8 14
+21037: 9 7 18 13
+292: 11 6 16 20
+""")
+
+part.add_result(4998764814652)

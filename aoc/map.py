@@ -7,6 +7,9 @@ class Offset(NamedTuple):
     x: int
     y: int
 
+    def negate(self) -> 'Offset':
+        return Offset(-self.x, -self.y)
+
 
 NEIGHBORS = [Offset(0, -1), Offset(1, 0), Offset(0, 1), Offset(-1, 0)]
 
@@ -14,6 +17,9 @@ NEIGHBORS = [Offset(0, -1), Offset(1, 0), Offset(0, 1), Offset(-1, 0)]
 class Coordinate(NamedTuple):
     x: int
     y: int
+
+    def difference(self, other: 'Coordinate') -> Offset:
+        return Offset(self.x - other.x, self.y - other.y)
 
     def add(self, offset: Offset) -> 'Coordinate':
         return Coordinate(self.x + offset.x, self.y + offset.y)

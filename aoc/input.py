@@ -31,6 +31,12 @@ class InputParser:
 
     def get_input(self) -> list[str]:
         return [line.strip() for line in self.input]
+
+    def get_two_part_input(self) -> tuple[list[str], list[str]]:
+        """For input that is two parts, separated by a blank line."""
+        input = self.get_input()
+        split_at = input.index('')
+        return input[:split_at], input[split_at+1:]
     
     def get_input_coords(self) -> list[Coordinate]:
         return [

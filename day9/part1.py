@@ -1,50 +1,57 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, DEBUG, INFO
+from aoc.runner import Part
 
-from pathlib import Path
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = '2333133121414131402'
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        filemap = list(map(int, input[0]))
 
-filemap: list[int] = []
-with INPUT_FILE.open() as ifp:
-    # text = TEST_INPUT
-    text = ifp.readline().strip()
-    filemap = list(map(int, text))
+        log(DEBUG, filemap)
 
-# print(filemap) 
+        blocks: list[int | None] = []
 
-blocks: list[int | None] = []
-
-filelength = True
-fileid = 0
-for length in filemap:
-    if filelength:
-        filelength = False
-        blocks.extend([fileid]*length)
-        fileid += 1
-    else:
         filelength = True
-        blocks.extend([None]*length)
+        fileid = 0
+        for length in filemap:
+            if filelength:
+                filelength = False
+                blocks.extend([fileid]*length)
+                fileid += 1
+            else:
+                filelength = True
+                blocks.extend([None]*length)
 
-# print(blocks)
+        log(DEBUG, blocks)
 
-start_index = 0
-end_index = len(blocks) - 1
+        start_index = 0
+        end_index = len(blocks) - 1
 
-while start_index < end_index:
-    while start_index < end_index and blocks[start_index] is not None:
-        start_index += 1
-    while start_index < end_index and blocks[end_index] is None:
-        end_index -= 1
-    if start_index < end_index:
-        blocks[end_index], blocks[start_index] = blocks[start_index], blocks[end_index]
+        while start_index < end_index:
+            while start_index < end_index and blocks[start_index] is not None:
+                start_index += 1
+            while start_index < end_index and blocks[end_index] is None:
+                end_index -= 1
+            if start_index < end_index:
+                blocks[end_index], blocks[start_index] = blocks[start_index], blocks[end_index]
 
-# print(blocks)
+        log(INFO, blocks)
 
-checksum = 0
-for i, fileid in enumerate(blocks):
-    if fileid is None:
-        break
-    checksum += i * fileid
+        checksum = 0
+        for i, fileid in enumerate(blocks):
+            if fileid is None:
+                break
+            checksum += i * fileid
 
-print('Checksum:', checksum)
+        log(RESULT, 'Checksum:', checksum)
+        return checksum
+
+
+part = Part1()
+
+part.add_result(1928, """
+2333133121414131402
+""")
+
+part.add_result(6448989155953)
