@@ -1,10 +1,8 @@
-#!/usr/bin/python
-
 import functools
-from pathlib import Path
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = '125 17'
+from aoc.input import InputParser
+from aoc.log import log, RESULT
+from aoc.runner import Part
 
 
 @functools.cache
@@ -20,19 +18,22 @@ def num_stones(value: int, blinks_remaining: int) -> int:
     return num_stones(int(s[n:]), blinks_remaining - 1) + num_stones(int(s[:n]), blinks_remaining - 1)
 
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        input = list(map(int,
-                # TEST_INPUT.split()
-                ifp.readline().strip().split()
-        ))
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = list(map(int, parser.get_input()[0].split()))
 
-    total_stones = 0
-    for value in input:
-        total_stones += num_stones(value, 75)
+        total_stones = 0
+        for value in input:
+            total_stones += num_stones(value, 75)
 
-    print('After 75 blinks the number of stones is:', total_stones)
+        log(RESULT, 'After 75 blinks the number of stones is:', total_stones)
+        return total_stones
 
 
-if __name__ == '__main__':
-    main()
+part = Part2()
+
+part.add_result(65601038650482, """
+125 17
+""")
+
+part.add_result(221683913164898)

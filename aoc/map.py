@@ -8,7 +8,7 @@ class Offset(NamedTuple):
     y: int
 
 
-NEIGHBORS = [Offset(1,0), Offset(0,1), Offset(-1,0), Offset(0,-1)]
+NEIGHBORS = [Offset(0, -1), Offset(1, 0), Offset(0, 1), Offset(-1, 0)]
 
 
 class Coordinate(NamedTuple):

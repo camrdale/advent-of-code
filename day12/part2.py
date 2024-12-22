@@ -1,11 +1,61 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, DEBUG
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import Garden
 
-from shared import Garden
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        garden = Garden(input)
+
+        log(DEBUG, garden)
+        
+        garden.merge()
+
+        log(DEBUG, garden)
+
+        discounted_price = garden.discounted_price()
+        log(RESULT, 'Discounted total garden price:', discounted_price)
+        return discounted_price
+
+
+part = Part2()
+
+part.add_result(80, """
+AAAA
+BBCD
+BBCC
+EEEC
+""")
+
+part.add_result(436, """
+OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO
+""")
+
+part.add_result(236, """
+EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE
+""")
+
+part.add_result(368, """
+AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA
+""")
+
+part.add_result(1206, """
 RRRRIICCFF
 RRRRIICCCF
 VVRRRCCFFF
@@ -16,23 +66,6 @@ VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE
-"""
+""")
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        garden = Garden(
-                # TEST_INPUT.split()
-                ifp.readlines()
-        )
-
-    # print(garden)
-    
-    garden.merge()
-
-    # print(garden)
-
-    print('Discounted total garden price:', garden.discounted_price())
-
-
-if __name__ == '__main__':
-    main()
+part.add_result(830516)

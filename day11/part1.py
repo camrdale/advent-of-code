@@ -1,11 +1,9 @@
-#!/usr/bin/python
-
 import math
 from collections.abc import Iterable, Iterator
-from pathlib import Path
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = '125 17'
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.runner import Part
 
 
 class Stone:
@@ -58,19 +56,25 @@ class StoneArrangement:
         return 'StoneArrangement(' + ', '.join(str(stone) for stone in self.stones()) + ')'
 
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        arrangement = StoneArrangement(
-                # TEST_INPUT.split()
-                ifp.readline().strip().split()
-        )
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        arrangement = StoneArrangement(input[0].split())
 
-    # print(arrangement)
-    for i in range(25):
-        arrangement.blink()
-        print('After', i+1, 'blinks the number of stones is:', arrangement.num_stones())
-        # print(arrangement)
+        log(DEBUG, arrangement)
+        for i in range(25):
+            arrangement.blink()
+            log(INFO, 'After', i+1, 'blinks the number of stones is:', arrangement.num_stones())
+            log(DEBUG, arrangement)
+        
+        log(RESULT, 'After 25 blinks the number of stones is:', arrangement.num_stones())
+        return arrangement.num_stones()
 
 
-if __name__ == '__main__':
-    main()
+part = Part1()
+
+part.add_result(55312, """
+125 17
+""")
+
+part.add_result(186996)

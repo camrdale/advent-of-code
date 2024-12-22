@@ -3,8 +3,11 @@
 from collections import defaultdict
 from pathlib import Path
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = '125 17'
+import os, sys; sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__))))
+
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO, DEBUG, set_log_level
+from aoc.runner import Part
 
 
 def blink(stone_counts: dict[int, int]) -> dict[int, int]:
@@ -23,24 +26,35 @@ def blink(stone_counts: dict[int, int]) -> dict[int, int]:
     return new_counts
 
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        input = list(map(int,
-                # TEST_INPUT.split()
-                ifp.readline().strip().split()
-        ))
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = list(map(int, parser.get_input()[0].split()))
 
-    stone_counts: dict[int, int] = defaultdict(int)
-    for value in input:
-        stone_counts[value] += 1
-        
-    # print(stone_counts)
+        stone_counts: dict[int, int] = defaultdict(int)
+        for value in input:
+            stone_counts[value] += 1
+            
+        log(DEBUG, stone_counts)
 
-    for i in range(75):
-        stone_counts = blink(stone_counts)
-        print('After', i+1, 'blinks the number of stones is:', sum(stone_counts.values()))
-        # print(stone_counts)
+        for i in range(75):
+            stone_counts = blink(stone_counts)
+            log(INFO, 'After', i+1, 'blinks the number of stones is:', sum(stone_counts.values()))
+            log(DEBUG, stone_counts)
+
+        total_stones = sum(stone_counts.values())
+        log(RESULT, 'After 75 blinks the number of stones is:', total_stones)
+        return total_stones
+
+
+part = Part2()
+
+part.add_result(65601038650482, """
+125 17
+""")
+
+part.add_result(221683913164898)
 
 
 if __name__ == '__main__':
-    main()
+    set_log_level(RESULT)
+    assert part.run_part(11, 2, subdirectory=Path(sys.argv[0]))

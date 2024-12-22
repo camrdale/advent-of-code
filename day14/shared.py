@@ -5,6 +5,8 @@ import operator
 import re
 from typing import NamedTuple
 
+from aoc.log import log, DEBUG
+
 
 ROBOT = re.compile(r'p\=([0-9]*),([0-9]*) v\=([-0-9]*),([-0-9]*)')
 
@@ -86,16 +88,16 @@ class RobotMap:
         quadrants: dict[int | None, int] = defaultdict(int)
         for robot in self.robots:
             quadrants[robot.quadrant()] += 1
-            # print('Robot', robot.position, 'is in quadrant', robot.quadrant())
-        # print(quadrants.items())
+            log(DEBUG, 'Robot', robot.position, 'is in quadrant', robot.quadrant())
+        log(DEBUG, quadrants.items())
         return math.prod(quadrants[i] for i in range(4))
     
     def symmetric(self) -> bool:
         quadrants: dict[int | None, int] = defaultdict(int)
         for robot in self.robots:
             quadrants[robot.quadrant()] += 1
-            # print('Robot', robot.position, 'is in quadrant', robot.quadrant())
-        # print(quadrants.items())
+            log(DEBUG, 'Robot', robot.position, 'is in quadrant', robot.quadrant())
+        log(DEBUG, quadrants.items())
         return quadrants[0] == quadrants[1] and quadrants[2] == quadrants[3]
 
     def line_lengths(self) -> tuple[int, int, int, int]:

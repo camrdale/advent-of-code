@@ -1,11 +1,32 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import RobotMap
 
-from shared import RobotMap
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        width: int
+        height: int
+        width, height = parser.get_additional_params()
+        robots = RobotMap(input, width, height)
+        
+        log(DEBUG, robots)
+
+        robots.simulate(100)
+
+        log(INFO, robots)
+
+        safety_factor = robots.safety_factor()
+        log(RESULT, 'Safety factor after 100s:', safety_factor)
+        return safety_factor
+
+
+part = Part1()
+
+part.add_result(12, """
 p=0,4 v=3,-3
 p=6,3 v=-1,-3
 p=10,3 v=-1,2
@@ -18,24 +39,6 @@ p=9,3 v=2,3
 p=7,3 v=-1,2
 p=2,4 v=2,-3
 p=9,5 v=-3,-3
-"""
+""", 11, 7)
 
-
-def main():
-    with INPUT_FILE.open() as ifp:
-        robots = RobotMap(
-                # TEST_INPUT.split('\n'), 11, 7
-                ifp.readlines(), 101, 103
-                )
-        
-    # print(robots)
-
-    robots.simulate(100)
-
-    # print(robots)
-
-    print('Safety factor after 100s:', robots.safety_factor())
-
-
-if __name__ == '__main__':
-    main()
+part.add_result(221616000, None, 101, 103)

@@ -1,35 +1,13 @@
-#!/usr/bin/python
-
 from typing import NamedTuple
-from collections.abc import Iterable
-from pathlib import Path
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """##########
-#..O..O.O#
-#......O.#
-#.OO..O.O#
-#..O@..O.#
-#O#..O...#
-#O..O..O.#
-#.OO.O.OO#
-#....O...#
-##########
-
-<vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
-vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
-><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
-<<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
-^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
-^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
->^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
-<><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
-^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
-v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
-"""
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.map import ParsedMap, Coordinate, Offset
+from aoc.runner import Part
 
 WALL = '#'
 BOX = 'O'
+ROBOT = '@'
 
 UP = '^'
 DOWN = 'v'
@@ -37,27 +15,11 @@ LEFT = '<'
 RIGHT = '>'
 
 
-class Offset(NamedTuple):
-    x: int
-    y: int
-
-
 DIRECTIONS = {
     UP: Offset(0, -1),
     RIGHT: Offset(1, 0),
     DOWN: Offset(0, 1),
     LEFT: Offset(-1, 0)}
-
-
-class Coordinate(NamedTuple):
-    x: int
-    y: int
-    
-    def add(self, offset: Offset) -> 'Coordinate':
-        return Coordinate(self.x + offset.x, self.y + offset.y)
-    
-    def valid(self, width: int, height: int) -> bool:
-        return 0 <= self.x < width and 0 <= self.y < height
 
 
 class Box(NamedTuple):
@@ -80,26 +42,23 @@ class Box(NamedTuple):
             return (self.right().add(offset),)
 
 
-class WarehouseMap:
-    def __init__(self, lines: Iterable[str]):
+class WarehouseMap(ParsedMap):
+    def __init__(self, lines: list[str]):
+        super().__init__(lines, WALL + BOX + ROBOT)
+        self.current_pos: Coordinate
+        (self.current_pos,) = self.features[ROBOT]
+        self.current_pos = self.current_pos._replace(x=self.current_pos.x*2)
         self.locations: dict[Coordinate, str | Box] = {}
-        self.height = 0
-        self.width = 0
-        self.current_pos: Coordinate = Coordinate(-1,-1)
-        for y, line in enumerate(lines):
-            if len(line) > 0:
-                self.width = len(line.strip())*2
-                self.height += 1
-                for x, c in enumerate(line.strip()):
-                    if c == BOX:
-                        box = Box(Coordinate(2*x,y))
-                        for location in box.occupies():
-                            self.locations[location] = box
-                    elif c == WALL:
-                        self.locations[Coordinate(2*x,y)] = WALL
-                        self.locations[Coordinate(2*x + 1,y)] = WALL
-                    elif c == '@':
-                        self.current_pos = Coordinate(2*x,y)
+
+        self.width *= 2
+
+        for coord in self.features[WALL]:
+            self.locations[coord._replace(x=2*coord.x)] = WALL
+            self.locations[coord._replace(x=2*coord.x + 1)] = WALL
+        for coord in self.features[BOX]:
+            box = Box(coord._replace(x=2*coord.x))
+            for location in box.occupies():
+                self.locations[location] = box
 
     def move_box(self, box: Box, direction: str) -> None:
         offset = DIRECTIONS[direction]
@@ -147,55 +106,87 @@ class WarehouseMap:
         boxes = set(contents for contents in self.locations.values() if isinstance(contents, Box))
         return sum(box.left.x + 100*box.left.y for box in boxes)
     
-    def __str__(self) -> str:
-        s = ''
-        for y in range(self.height):
-            for x in range(self.width):
-                c = Coordinate(x,y)
-                if c == self.current_pos:
-                    s += '@'
-                    continue
-                contents = self.locations.get(c, None)
-                if isinstance(contents, Box):
-                    if contents.left == c:
-                        s += '['
-                    else:
-                        s += ']'
-                elif contents is None:
-                    s += '.'
+    def print_updated_map(self) -> str:
+        self.features[WALL] = set(coord for coord, contents in self.locations.items() if contents == WALL)
+        self.features[BOX] = set()
+        self.features[ROBOT] = set([self.current_pos])
+        additional_features: dict[str, set[Coordinate]] = {'[': set(), ']': set()}
+        for location, contents in self.locations.items():
+            if isinstance(contents, Box):
+                if contents.left == location:
+                    additional_features['['].add(location)
                 else:
-                    s += contents
-            s += '\n'
-        return s
+                    additional_features[']'].add(location)
+        return super().print_map(additional_features)
 
 
-def main():
-    map_input: list[str] = []
-    move_input = ''
-    with INPUT_FILE.open() as ifp:
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        map_input: list[str] = []
+        move_input = ''
         map_time = True
-        # for line in TEST_INPUT.split('\n'):
-        for line in ifp.readlines():
+        for line in input:
             if map_time:
-                if line.strip() == '':
+                if line == '':
                     map_time = False
                 else:
-                    map_input.append(line.strip())
+                    map_input.append(line)
             else:
-                move_input += line.strip()
+                move_input += line
 
-    map = WarehouseMap(map_input)
+        map = WarehouseMap(map_input)
 
-    # print(map)
+        log(DEBUG, map.print_updated_map())
 
-    for direction in move_input:
-        map.move(direction)
-        # print(map)
+        for direction in move_input:
+            map.move(direction)
+            log(DEBUG, map.print_updated_map())
 
-    # print(map)
+        log(INFO, map.print_updated_map())
 
-    print('Sum of box GPS coordinates:', map.sum_box_positions())
+        box_positions = map.sum_box_positions()
+        log(RESULT, 'Sum of box GPS coordinates:', box_positions)
+
+        return box_positions
 
 
-if __name__ == '__main__':
-    main()
+part = Part2()
+
+part.add_result(618, """
+#######
+#...#.#
+#.....#
+#..OO@#
+#..O..#
+#.....#
+#######
+
+<vv<<^^<<^^
+""")
+
+part.add_result(9021, """
+##########
+#..O..O.O#
+#......O.#
+#.OO..O.O#
+#..O@..O.#
+#O#..O...#
+#O..O..O.#
+#.OO.O.OO#
+#....O...#
+##########
+
+<vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
+vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
+><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
+<<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
+^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
+^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
+>^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
+<><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
+^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
+v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
+""")
+
+part.add_result(1462788)

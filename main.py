@@ -69,7 +69,7 @@ def run_all():
             continue
 
         day = int(day_match.group(1))
-        if day < 17:
+        if day < 10:
             continue  # Not all days have been converted yet.
         parts.extend((day, part) for part in find_parts(day_dir))
 

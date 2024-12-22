@@ -1,28 +1,7 @@
-from typing import NamedTuple
 from collections.abc import Generator, Iterable
 
-
-class Offset(NamedTuple):
-    x: int
-    y: int
-
-
-NEIGHBORS = [
-    Offset(0, -1),
-    Offset(1, 0),
-    Offset(0, 1),
-    Offset(-1, 0)]
-
-
-class Coordinate(NamedTuple):
-    x: int
-    y: int
-    
-    def add(self, offset: Offset) -> 'Coordinate':
-        return Coordinate(self.x + offset.x, self.y + offset.y)
-    
-    def valid(self, width: int, height: int) -> bool:
-        return 0 <= self.x < width and 0 <= self.y < height
+from aoc.log import log, DEBUG
+from aoc.map import Coordinate, NEIGHBORS
 
 
 class TopographicMap:
@@ -57,8 +36,8 @@ class TopographicMap:
                         next_coords.add(next_coord)
             coords = next_coords
             altitude += 1
-        # for coord in coords:
-        #     print('  Found a path from', starting_coord, 'to', coord)
+        for coord in coords:
+            log(DEBUG, '  Found a path from', trailhead, 'to', coord)
         return len(coords)
 
     def rating(self, trailhead: Coordinate) -> int:
@@ -74,6 +53,6 @@ class TopographicMap:
                         next_coords.append(next_coord)
             coords = next_coords
             altitude += 1
-        # for coord in coords:
-        #     print('  Found a path from', starting_coord, 'to', coord)
+        for coord in coords:
+            log(DEBUG, '  Found a path from', trailhead, 'to', coord)
         return len(coords)

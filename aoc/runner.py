@@ -29,7 +29,7 @@ class Part(ABC):
             self.final_result = result
             self.additional_params = additional_params
 
-    def run_part(self, day: int, part_num: int) -> bool:
+    def run_part(self, day: int, part_num: int, subdirectory: Path | None = None) -> bool:
         """Run all the input data for this part, returning whether it matched the expected."""
         success = True
         i = 0
@@ -49,8 +49,11 @@ class Part(ABC):
 
         print(f'Running day{day}, part{part_num} input file')
 
+        base_path = Path(sys.argv[0]).parent.resolve() / f'day{day}'
+        if subdirectory is not None:
+            base_path = subdirectory.parent.resolve()
         parser = InputParser.for_file_input(
-            Path(sys.argv[0]).parent.resolve() / f'day{day}' / 'input.txt',
+            base_path / 'input.txt',
             *self.additional_params)
         start = time.time()
         result = self.run(parser)

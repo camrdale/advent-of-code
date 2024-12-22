@@ -4,6 +4,7 @@ from aoc.runner import Part
 
 from .shared import DirectionalRobot, NumericalRobot
 
+
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()

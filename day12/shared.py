@@ -2,34 +2,13 @@ from typing import NamedTuple
 from types import NotImplementedType
 from collections.abc import Iterable
 
-
-class Offset(NamedTuple):
-    x: int
-    y: int
+from aoc.log import log, DEBUG, INFO
+from aoc.map import Offset, Coordinate
 
 
-NEIGHBORS = [
-    Offset(0, -1),
-    Offset(1, 0),
-    Offset(0, 1),
-    Offset(-1, 0)]
 DOWNSTREAM_NEIGHBORS = [
     Offset(1, 0),
     Offset(0, 1)]
-
-
-class Coordinate(NamedTuple):
-    x: int
-    y: int
-    
-    def add(self, offset: Offset) -> 'Coordinate':
-        return Coordinate(self.x + offset.x, self.y + offset.y)
-    
-    def valid(self, width: int, height: int) -> bool:
-        return 0 <= self.x < width and 0 <= self.y < height
-    
-    def neighbors(self) -> list['Coordinate']:
-        return [self.add(neighbor) for neighbor in NEIGHBORS]
 
 
 class Fence(NamedTuple):
@@ -103,7 +82,7 @@ class Region:
 
     def merge(self, other: 'Region'):
         """Merge another region into this one."""
-        # print('Merging', other.initial_location, 'into', self.initial_location)
+        log(DEBUG, 'Merging', other.initial_location, 'into', self.initial_location)
         assert(other.initial_location != self.initial_location)
         assert(other.plant == self.plant)
         self.locations.update(other.locations)
@@ -111,8 +90,8 @@ class Region:
     
     def price(self) -> int:
         """Calculate the price of this region."""
-        # print('A region of', self.plant, 'plants with price',
-        #       len(self.locations), '*', len(self.fences), '=', len(self.locations) * len(self.fences))
+        log(INFO, 'A region of', self.plant, 'plants with price',
+            len(self.locations), '*', len(self.fences), '=', len(self.locations) * len(self.fences))
         return len(self.locations) * len(self.fences)
     
     def discounted_price(self) -> int:
@@ -133,8 +112,8 @@ class Region:
                     break
             if not merged:
                 sides.append(Side(fence, inside))
-        # print('A region of', self.plant, 'plants with discounted price',
-        #       len(self.locations), '*', len(sides), '=', len(self.locations) * len(sides))
+        log(INFO, 'A region of', self.plant, 'plants with discounted price',
+            len(self.locations), '*', len(sides), '=', len(self.locations) * len(sides))
         return len(self.locations) * len(sides)
     
     def __hash__(self) -> int:
@@ -167,17 +146,17 @@ class Garden:
         for y in range(self.height):
             for x in range(self.width):
                 c = Coordinate(x,y)
-                # print('Processing', c)
+                log(DEBUG, 'Processing', c)
                 region = self.regions[c]
                 for neighbor_offset in DOWNSTREAM_NEIGHBORS:
                     neighbor = c.add(neighbor_offset)
                     if neighbor.valid(self.width, self.height):
-                        # print('Checking', region.plant, 'at', c, 'against', neighbor)
+                        log(DEBUG, 'Checking', region.plant, 'at', c, 'against', neighbor)
                         neighbor_region = self.regions[neighbor]
                         if neighbor_region.plant == region.plant and neighbor_region != region:
                             region.merge(neighbor_region)
                             for location in neighbor_region.locations:
-                                # print('Pointing dict for', location, 'from region', self.regions[location], 'to merged region', region)
+                                log(DEBUG, 'Pointing dict for', location, 'from region', self.regions[location], 'to merged region', region)
                                 self.regions[location] = region
 
     def price(self) -> int:

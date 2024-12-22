@@ -4,6 +4,7 @@ from aoc.runner import Part
 
 from .shared import DirectionalRobot, NumericalRobot
 
+
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
         set_log_level(INFO)

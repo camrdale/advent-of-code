@@ -1,11 +1,44 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, DEBUG
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import Garden
 
-from shared import Garden
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        garden = Garden(input)
+
+        log(DEBUG, garden)
+        
+        garden.merge()
+
+        log(DEBUG, garden)
+
+        total_price = garden.price()
+        log(RESULT, 'Total garden price:', total_price)
+        return total_price
+
+
+part = Part1()
+
+part.add_result(140, """
+AAAA
+BBCD
+BBCC
+EEEC
+""")
+
+part.add_result(772, """
+OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO
+""")
+
+part.add_result(1930, """
 RRRRIICCFF
 RRRRIICCCF
 VVRRRCCFFF
@@ -16,23 +49,6 @@ VVIIICJJEE
 MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE
-"""
+""")
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        garden = Garden(
-                # TEST_INPUT.split()
-                ifp.readlines()
-        )
-
-    # print(garden)
-    
-    garden.merge()
-
-    # print(garden)
-
-    print('Total garden price:', garden.price())
-
-
-if __name__ == '__main__':
-    main()
+part.add_result(1361494)

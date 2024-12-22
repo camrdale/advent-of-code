@@ -1,11 +1,35 @@
-#!/usr/bin/python
+from aoc.input import InputParser
+from aoc.log import log, RESULT, INFO
+from aoc.runner import Part
 
-from pathlib import Path
+from .shared import TopographicMap
 
-from shared import TopographicMap
 
-INPUT_FILE = Path(__file__).parent.resolve() / 'input.txt'
-TEST_INPUT = """
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+        map = TopographicMap(input)
+
+        trailhead_scores = 0
+        for trailhead in map.trailheads():
+            score = map.score(trailhead)
+            log(INFO, 'Trailhead', trailhead, 'has a score of', score)
+            trailhead_scores += score
+
+        log(RESULT, 'Total trailhead score:', trailhead_scores)
+        return trailhead_scores
+
+
+part = Part1()
+
+part.add_result(1, """
+0123
+1234
+8765
+9876
+""")
+
+part.add_result(36, """
 89010123
 78121874
 87430965
@@ -14,23 +38,6 @@ TEST_INPUT = """
 32019012
 01329801
 10456732
-"""
+""")
 
-def main():
-    with INPUT_FILE.open() as ifp:
-        map = TopographicMap(
-                # TEST_INPUT.split()
-                ifp.readlines()
-        )
-
-    trailhead_scores = 0
-    for trailhead in map.trailheads():
-        score = map.score(trailhead)
-        # print('Trailhead', trailhead, 'has a score of', score)
-        trailhead_scores += score
-
-    print('Total trailhead score:', trailhead_scores)
-
-
-if __name__ == '__main__':
-    main()
+part.add_result(674)

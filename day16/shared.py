@@ -2,17 +2,13 @@
 
 from enum import IntEnum
 from typing import NamedTuple
-from collections.abc import Iterable
 from queue import PriorityQueue
+
+from aoc.map import Coordinate, Offset, ParsedMap
 
 WALL = '#'
 STARTING = 'S'
 END = 'E'
-
-
-class Offset(NamedTuple):
-    x: int
-    y: int
 
 
 class Direction(IntEnum):
@@ -34,17 +30,6 @@ class Direction(IntEnum):
             WEST: Offset(-1, 0)}) -> Offset:
         return _directions[self.value]
 
-
-class Coordinate(NamedTuple):
-    x: int
-    y: int
-
-    def add(self, offset: Offset) -> 'Coordinate':
-        return Coordinate(self.x + offset.x, self.y + offset.y)
-    
-    def valid(self, width: int, height: int) -> bool:
-        return 0 <= self.x < width and 0 <= self.y < height
-    
 
 class Situation(NamedTuple):
     location: Coordinate
@@ -81,25 +66,13 @@ class ReindeerPath(NamedTuple):
         return (self.forward(), self.clockwise(), self.counterclockwise())
 
 
-class ReindeerMaze:
-    def __init__(self, lines: Iterable[str]):
-        self.walls: set[Coordinate] = set()
-        self.height = 0
-        self.width = 0
-        self.starting_pos: Coordinate = Coordinate(-1,-1)
-        self.end_pos: Coordinate = Coordinate(-1,-1)
+class ReindeerMaze(ParsedMap):
+    def __init__(self, lines: list[str]):
+        super().__init__(lines, WALL + STARTING + END)
+        self.walls: set[Coordinate] = self.features[WALL]
+        (self.starting_pos,) = self.features[STARTING]
+        (self.end_pos,) = self.features[END]
         self.starting_direction = Direction.EAST
-        for y, line in enumerate(lines):
-            if len(line.strip()) > 0:
-                self.width = len(line.strip())
-                self.height += 1
-                for x, c in enumerate(line.strip()):
-                    if c == WALL:
-                        self.walls.add(Coordinate(x,y))
-                    elif c == STARTING:
-                        self.starting_pos = Coordinate(x,y)
-                    elif c == END:
-                        self.end_pos = Coordinate(x,y)
 
     def lowest_score_paths(self) -> list[ReindeerPath]:
         visited: dict[Situation, int] = {}
@@ -127,22 +100,7 @@ class ReindeerMaze:
         return found_paths
     
     def print_paths(self, paths: list[ReindeerPath]) -> str:
-        s = ''
         visited: set[Coordinate] = set()
         for path in paths:
             visited.update(path.previous)
-        for y in range(self.height):
-            for x in range(self.width):
-                c = Coordinate(x,y)
-                if c in self.walls:
-                    s += WALL
-                elif c == self.starting_pos:
-                    s += STARTING
-                elif c == self.end_pos:
-                    s += END
-                elif c in visited:
-                    s += 'O'
-                else:
-                    s += '.'
-            s += '\n'
-        return s
+        return self.print_map({'O': visited}, additional_feature_priority=False)
