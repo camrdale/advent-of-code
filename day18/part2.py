@@ -17,7 +17,7 @@ class Part2(Part):
 
         maze.add_walls(bytes[:num_fall])
 
-        path = maze.lowest_score_path()
+        path = maze.shortest_path()
 
         if path is None:
             print('ERROR failed to find initial path through the maze')
@@ -28,7 +28,7 @@ class Part2(Part):
             next_byte = bytes[next_to_fall]
             maze.add_walls((next_byte,))
             if next_byte in path.previous:
-                path = maze.lowest_score_path()
+                path = maze.shortest_path()
                 if path is None:
                     log(RESULT, f'Path is not possible after {next_to_fall} byte: {next_byte}')
                     return next_byte

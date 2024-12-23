@@ -15,7 +15,7 @@ class ReindeerMaze(EmptyMap):
     def add_walls(self, new_walls: Iterable[Coordinate]) -> None:
         self.walls.update(new_walls)
 
-    def lowest_score_path(self) -> Path | None:
+    def shortest_path(self) -> Path | None:
         _, shortest_path = self.shortest_paths(self.starting_pos, self.end_pos, WALL)
         return shortest_path
     

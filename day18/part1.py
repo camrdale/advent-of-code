@@ -17,7 +17,7 @@ class Part1(Part):
 
         maze.add_walls(bytes[:num_fall])
 
-        path = maze.lowest_score_path()
+        path = maze.shortest_path()
 
         if path is None:
             print('ERROR failed to find path through the maze')
@@ -25,8 +25,8 @@ class Part1(Part):
 
         log(DEBUG, maze.print_path(path))
 
-        log(RESULT, 'Found lowest score paths with score:', path.score)
-        return path.score
+        log(RESULT, 'Found shortest path with number of steps:', path.length)
+        return path.length
 
 
 part = Part1()

@@ -4,6 +4,7 @@ from queue import PriorityQueue
 
 
 class Offset(NamedTuple):
+    """A delta between two Coordinates."""
     x: int
     y: int
 
@@ -32,13 +33,13 @@ class Coordinate(NamedTuple):
 
 
 class Path(NamedTuple):
-    score: int
+    length: int
     location: Coordinate
     previous: frozenset[Coordinate]
 
     def next_paths(self) -> list['Path']:
         new_previous = self.previous.union((self.location,))
-        return [Path(self.score + 1, neighbor, new_previous)
+        return [Path(self.length + 1, neighbor, new_previous)
                 for neighbor in self.location.neighbors()
                 if neighbor not in self.previous]
 
@@ -51,6 +52,7 @@ class EmptyMap:
         self.features: dict[str, set[Coordinate]] = defaultdict(set)
 
     def valid(self, coordinate: Coordinate) -> bool:
+        """Check if a Coordinate is valid for this map."""
         return coordinate.valid(self.width, self.height)
 
     def shortest_paths(
@@ -59,6 +61,13 @@ class EmptyMap:
             ending_pos: Coordinate, 
             features_to_avoid: str
             ) -> tuple[dict[Coordinate, int], Path | None]:
+        """Find the shortest paths from starting_pos, avoiding the features.
+        
+        Returns a dictionary containing all reachable Coordinates from
+        starting_pos, with values of the shortest length of a path.
+        Also returns a Path for a shortest path from starting_pos to
+        ending_pos.
+        """
         visited: dict[Coordinate, int] = {}
         shortest_path: Path | None = None
         paths_to_try: PriorityQueue[Path] = PriorityQueue()
@@ -71,14 +80,15 @@ class EmptyMap:
             path = paths_to_try.get()
             if path.location in visited:
                 continue
-            visited[path.location] = path.score
+            visited[path.location] = path.length
 
             if path.location == ending_pos:
+                # Can only visit the ending location once, so the first time is the shortest path.
                 shortest_path = path
                 continue
 
             for next_path in path.next_paths():
-                if next_path.location.valid(self.width, self.height) and next_path.location not in coords_to_avoid:
+                if self.valid(next_path.location) and next_path.location not in coords_to_avoid:
                     paths_to_try.put(next_path)
 
         return visited, shortest_path
@@ -117,6 +127,7 @@ class EmptyMap:
 
 class ParsedMap(EmptyMap):
     def __init__(self, lines: list[str], save_features: str):
+        """Construct a map from the 2D-array in lines, saving the Coordinates of any characters in save_features."""
         super().__init__(len(lines[0]), len(lines))
         self.save_features = save_features
         for y, line in enumerate(lines):
