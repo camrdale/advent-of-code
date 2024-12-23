@@ -21,11 +21,11 @@ class Part1(Part):
             for node1, node2 in itertools.combinations(typednodes, 2):
                 offset: Offset = node2.difference(node1)
                 antinode2 = node2.add(offset)
-                if antinode2.valid(map.width, map.height):
+                if map.valid(antinode2):
                     log(DEBUG, node1, node2, antinode2)
                     antinodes.add(antinode2)
                 antinode1 = node1.add(offset.negate())
-                if antinode1.valid(map.width, map.height):
+                if map.valid(antinode1):
                     log(DEBUG, node2, node1, antinode1)
                     antinodes.add(antinode1)
 

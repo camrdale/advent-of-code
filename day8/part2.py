@@ -23,14 +23,14 @@ class Part2(Part):
 
                 offset: Offset = node2.difference(node1)
                 antinode = node2.add(offset)
-                while antinode.valid(map.width, map.height):
+                while map.valid(antinode):
                     log(DEBUG, node1, node2, antinode)
                     antinodes.add(antinode)
                     antinode = antinode.add(offset)
 
                 offset = offset.negate()
                 antinode = node2.add(offset)
-                while antinode.valid(map.width, map.height):
+                while map.valid(antinode):
                     log(DEBUG, node1, node2, antinode)
                     antinodes.add(antinode)
                     antinode = antinode.add(offset)

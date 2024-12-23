@@ -50,6 +50,9 @@ class EmptyMap:
         self.save_features = ''
         self.features: dict[str, set[Coordinate]] = defaultdict(set)
 
+    def valid(self, coordinate: Coordinate) -> bool:
+        return coordinate.valid(self.width, self.height)
+
     def shortest_paths(
             self, 
             starting_pos: Coordinate, 

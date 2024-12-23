@@ -64,7 +64,7 @@ class Part2(Part):
         looping_obstacles: set[tuple[int, int]] = set()
         while True:
             next_pos = current_pos.add(INCREMENTS[direction])
-            if not next_pos.valid(map.width, map.height):
+            if not map.valid(next_pos):
                 break
             if next_pos in obstacles:
                 direction = (direction + 1) % 4
