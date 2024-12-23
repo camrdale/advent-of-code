@@ -11,7 +11,7 @@ class Part2(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
 
-        map = ParsedMap(input, string.ascii_lowercase + string.ascii_uppercase + ''.join(str(i) for i in range(10)))
+        map = ParsedMap(input, string.ascii_lowercase + string.ascii_uppercase + '0123456789')
 
         log(DEBUG, map.width, map.height)
         log(DEBUG, map.features)

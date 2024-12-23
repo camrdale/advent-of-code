@@ -1,27 +1,16 @@
-from collections.abc import Generator, Iterable
+from collections.abc import Generator
 
 from aoc.log import log, DEBUG
-from aoc.map import Coordinate, NEIGHBORS
+from aoc.map import Coordinate, NEIGHBORS, ParsedMap
 
 
-class TopographicMap:
-    def __init__(self, lines: Iterable[str]):
-        self.altitudes: dict[Coordinate, int] = {}
-        self.height = 0
-        self.width = 0
-        for y, line in enumerate(lines):
-            if len(line.strip()) > 0:
-                self.width = len(line.strip())
-                self.height += 1
-                for x, c in enumerate(line.strip()):
-                    self.altitudes[Coordinate(x,y)] = int(c)
+class TopographicMap(ParsedMap):
+    def __init__(self, lines: list[str]):
+        super().__init__(lines, '0123456789')
 
     def trailheads(self) -> Generator[Coordinate]:
-        for y in range(self.height):
-            for x in range(self.width):
-                coord = Coordinate(x,y)
-                if self.altitudes.get(coord) == 0:
-                    yield coord
+        for coord in self.features['0']:
+            yield coord
 
     def score(self, trailhead: Coordinate) -> int:
         """Calculate the score of the trailhead."""
@@ -32,7 +21,7 @@ class TopographicMap:
             for coord in coords:
                 for offset in NEIGHBORS:
                     next_coord = coord.add(offset)
-                    if next_coord.valid(self.width, self.height) and self.altitudes[next_coord] == altitude + 1:
+                    if next_coord.valid(self.width, self.height) and next_coord in self.features[str(altitude + 1)]:
                         next_coords.add(next_coord)
             coords = next_coords
             altitude += 1
@@ -49,7 +38,7 @@ class TopographicMap:
             for coord in coords:
                 for offset in NEIGHBORS:
                     next_coord = coord.add(offset)
-                    if next_coord.valid(self.width, self.height) and self.altitudes[next_coord] == altitude + 1:
+                    if next_coord.valid(self.width, self.height) and next_coord in self.features[str(altitude + 1)]:
                         next_coords.append(next_coord)
             coords = next_coords
             altitude += 1

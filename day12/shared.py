@@ -1,9 +1,9 @@
+import string
 from typing import NamedTuple
 from types import NotImplementedType
-from collections.abc import Iterable
 
 from aoc.log import log, DEBUG, INFO
-from aoc.map import Offset, Coordinate
+from aoc.map import Offset, Coordinate, ParsedMap
 
 
 DOWNSTREAM_NEIGHBORS = [
@@ -129,17 +129,13 @@ class Region:
                 + str(self.locations) + ', ' + str(self.fences))
 
 
-class Garden:
-    def __init__(self, lines: Iterable[str]):
+class Garden(ParsedMap):
+    def __init__(self, lines: list[str]):
+        super().__init__(lines, string.ascii_uppercase)
         self.regions: dict[Coordinate, Region] = {}
-        self.height = 0
-        self.width = 0
-        for y, line in enumerate(lines):
-            if len(line.strip()) > 0:
-                self.width = len(line.strip())
-                self.height += 1
-                for x, c in enumerate(line.strip()):
-                    self.regions[Coordinate(x,y)] = Region(c, Coordinate(x,y))
+        for c, coordinates in self.features.items():
+            for coordinate in coordinates:
+                self.regions[coordinate] = Region(c, coordinate)
 
     def merge(self):
         """Merge any neighboring plots of the same type."""
