@@ -7,7 +7,7 @@ from .shared import parse
 
 class Part1(Part):
     def run(self, parser: InputParser) -> str:
-        state, program = parse(parser.get_input())
+        state, program = parse(parser)
 
         program.execute(state)
 

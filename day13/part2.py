@@ -7,8 +7,7 @@ from .shared import parse, win
 
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
-        input = parser.get_input()
-        machines = parse(input)
+        machines = parse(parser)
 
         machines = [
             machine._replace(x=machine.x+10000000000000, y=machine.y+10000000000000)

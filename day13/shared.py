@@ -1,7 +1,7 @@
 import re
-from collections.abc import Iterable
 from typing import NamedTuple
 
+from aoc.input import InputParser
 from aoc.log import log, INFO
 
 
@@ -22,25 +22,12 @@ class Machine(NamedTuple):
         return f'A: X+{self.xa}, Y+{self.ya}; B: X+{self.xb}, Y+{self.yb}; Prize: X={self.x}, Y={self.y}'
 
 
-def parse(input: Iterable[str]) -> list[Machine]:
-    machines: list[Machine] = []
-    xa = 0
-    xb = 0
-    x = 0
-    ya = 0
-    yb = 0
-    y = 0
-    for line in input:
-        if line.strip() == '':
-            continue
-        if match := BUTTON_A.match(line):
-            xa, ya = int(match.group(1)), int(match.group(2))
-        elif match := BUTTON_B.match(line):
-            xb, yb = int(match.group(1)), int(match.group(2))
-        elif match := PRIZE.match(line):
-            x, y = int(match.group(1)), int(match.group(2))
-            machines.append(Machine(xa, ya, xb, yb, x, y))
-    return machines
+def parse(parser: InputParser) -> list[Machine]:
+    return [
+        Machine(int(parsed[BUTTON_A][0]), int(parsed[BUTTON_A][1]),
+                int(parsed[BUTTON_B][0]), int(parsed[BUTTON_B][1]),
+                int(parsed[PRIZE][0]), int(parsed[PRIZE][1]))
+        for parsed in parser.get_multipart_parsed_input(BUTTON_A, BUTTON_B, PRIZE)]
 
 
 def win(m: Machine) -> int | None:

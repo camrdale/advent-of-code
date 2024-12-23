@@ -7,14 +7,15 @@ from .shared import Towels
 
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
-        input = parser.get_input()
+        towel_input, design_input = parser.get_two_part_input()
+        assert len(towel_input) == 1
 
-        towels = Towels(input[0])
+        towels = Towels(towel_input[0])
 
         log(DEBUG, f'There are {len(towels.towels)} towels with max length {towels.max_length}')
 
-        num_possible = 0    
-        for design in input[1:]:
+        num_possible = 0
+        for design in design_input:
             if len(design) == 0:
                 continue
 

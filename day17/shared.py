@@ -1,11 +1,12 @@
 import re
 from abc import ABC, abstractmethod
-from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Any
 
+from aoc.input import InputParser
 
-REGISTER = re.compile(r'Register ([ABC]): ([0-9]*)')
+REGISTER_A = re.compile(r'Register A: ([0-9]*)')
+REGISTER_B = re.compile(r'Register B: ([0-9]*)')
+REGISTER_C = re.compile(r'Register C: ([0-9]*)')
 PROGRAM = re.compile(r'Program: ([0-9,]*)')
 
 
@@ -122,17 +123,10 @@ class Program:
             operation.execute(operand, state)
 
 
-def parse(input: Iterable[str]) -> tuple[State, Program]:
-    registers: dict[str, Any] = {}
-    program = None
-    for line in input:
-        if line.strip() == '':
-            continue
-        if match := REGISTER.match(line):
-            registers[match.group(1)] = int(match.group(2))
-        elif match := PROGRAM.match(line):
-            program = Program(match.group(1))
-        else:
-            print('ERROR unmatched input line:', line)
-    assert(program is not None)
-    return State(**registers), program
+def parse(parser: InputParser) -> tuple[State, Program]:
+    parsed = parser.get_multipart_parsed_input(REGISTER_A, REGISTER_B, REGISTER_C, PROGRAM)
+    assert len(parsed) == 2
+    return (State(int(parsed[0][REGISTER_A][0]),
+                  int(parsed[0][REGISTER_B][0]),
+                  int(parsed[0][REGISTER_C][0])),
+            Program(parsed[1][PROGRAM][0]))

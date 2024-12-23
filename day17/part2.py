@@ -58,7 +58,7 @@ def find_bits(remaining_instructions: list[int], bits_so_far: list[int]) -> list
 
 class Part2(Part):
     def run(self, parser: InputParser) -> int | None:
-        state, program = parse(parser.get_input())
+        state, program = parse(parser)
 
         bits = find_bits(program.instructions, [])
 

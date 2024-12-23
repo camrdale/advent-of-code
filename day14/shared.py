@@ -1,5 +1,5 @@
 from collections import defaultdict
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 import math
 import operator
 import re
@@ -65,20 +65,15 @@ class Robot:
 
 class RobotMap:
 
-    def __init__(self, input: Iterable[str], width: int, height: int):
+    def __init__(self, input: list[tuple[str, ...]], width: int, height: int):
         self.width= width
         self.height = height
-        self.robots: list[Robot] = []
-        for line in input:
-            if line.strip() == '':
-                continue
-            if match := ROBOT.match(line):
-                self.robots.append(Robot(
-                    Position(int(match.group(1)), int(match.group(2))),
-                    Velocity(int(match.group(3)), int(match.group(4))),
-                    width, height))
-            else:
-                print('ERROR failed to match:', line)
+        self.robots: list[Robot] = [
+            Robot(
+                Position(int(robot[0]), int(robot[1])),
+                Velocity(int(robot[2]), int(robot[3])),
+                width, height)
+            for robot in input]
     
     def simulate(self, time: int):
         for robot in self.robots:

@@ -2,12 +2,12 @@ from aoc.input import InputParser
 from aoc.log import log, RESULT, INFO, DEBUG
 from aoc.runner import Part
 
-from .shared import RobotMap
+from .shared import RobotMap, ROBOT
 
 
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
-        input = parser.get_input()
+        input = parser.get_parsed_input(ROBOT)
         width: int
         height: int
         width, height = parser.get_additional_params()

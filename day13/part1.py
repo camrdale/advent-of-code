@@ -7,8 +7,7 @@ from .shared import parse, win
 
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
-        input = parser.get_input()
-        machines = parse(input)
+        machines = parse(parser)
 
         total_tokens = 0
         wins = 0
