@@ -3,7 +3,7 @@
 from collections import defaultdict
 from pathlib import Path
 
-import os, sys; sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__))))
+import os, sys; sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from aoc.input import InputParser
 from aoc.log import log, RESULT, INFO, DEBUG, set_log_level
@@ -57,4 +57,4 @@ part.add_result(221683913164898)
 
 if __name__ == '__main__':
     set_log_level(RESULT)
-    assert part.run_part(11, 2, subdirectory=Path(sys.argv[0]))
+    assert part.run_part(2024, 11, 2, subdirectory=Path(sys.argv[0]))

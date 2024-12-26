@@ -29,27 +29,27 @@ class Part(ABC):
             self.final_result = result
             self.additional_params = additional_params
 
-    def run_part(self, day: int, part_num: int, subdirectory: Path | None = None) -> bool:
+    def run_part(self, year: int, day: int, part_num: int, subdirectory: Path | None = None) -> bool:
         """Run all the input data for this part, returning whether it matched the expected."""
         success = True
         i = 0
         for test_data, expected_result in self.test_data_and_results:
             i += 1
-            print(f'Running day{day}, part{part_num} test data {i}')
+            print(f'Running year{year}, day{day}, part{part_num} test data {i}')
 
             parser = InputParser.for_test_data(test_data, *self.test_data_additional_params[i-1])
             result = self.run(parser)
 
             if expected_result != result:
-                print(f'FAIL on day {day} part {part_num} test data\n{test_data}\nexpected {expected_result}, but got {result}')
+                print(f'FAIL on year{year}, day{day} part{part_num} test data\n{test_data}\nexpected {expected_result}, but got {result}')
                 success = False
 
         if not success:
             return success
 
-        print(f'Running day{day}, part{part_num} input file')
+        print(f'Running year{year}, day{day}, part{part_num} input file')
 
-        base_path = Path(sys.argv[0]).parent.resolve() / f'day{day}'
+        base_path = Path(sys.argv[0]).parent.resolve() / f'year{year}' / f'day{day}'
         if subdirectory is not None:
             base_path = subdirectory.parent.resolve()
         parser = InputParser.for_file_input(
@@ -60,8 +60,8 @@ class Part(ABC):
         end = time.time()
 
         if self.final_result is not None and self.final_result != result:
-            print(f'FAIL on day {day} part {part_num} input data, expected {self.final_result}, but got {result}')
+            print(f'FAIL on year{year}, day{day}, part{part_num} input data, expected {self.final_result}, but got {result}')
 
-        print(f'Day{day}, part{part_num} took {end-start:.3f} seconds to run')
+        print(f'year{year}, day{day}, part{part_num} took {end-start:.3f} seconds to run')
 
         return self.final_result == result
