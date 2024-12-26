@@ -99,7 +99,7 @@ def run_all(only_year: int|None = None):
 
 if __name__ == '__main__':
     # run_today()
-    # run_day(2024, 17)
-    run_all()
+    # run_day(2021, 3)
+    run_all(only_year=2021)
     set_log_level(INFO)
     # run_part(21, 2)
