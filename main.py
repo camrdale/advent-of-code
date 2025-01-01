@@ -54,9 +54,11 @@ def run_day(year: int, day: int, latest_only: bool=False):
             run_part(year, day, part)
 
 
-def run_today():
+def run_today(year: int|None = None):
     """Run the latest part created for today."""
-    run_day(datetime.date.today().year, datetime.date.today().day, latest_only=True)
+    if year is None:
+        year = datetime.date.today().year
+    run_day(year, datetime.date.today().day, latest_only=True)
 
 
 def run_all(only_year: int|None = None):
@@ -98,8 +100,8 @@ def run_all(only_year: int|None = None):
 
 
 if __name__ == '__main__':
-    # run_today()
-    # run_day(2021, 3)
-    run_all(only_year=2021)
+    run_today(year=2023)
+    # run_day(2023, 1)
+    # run_all(only_year=2021)
     set_log_level(INFO)
     # run_part(21, 2)
