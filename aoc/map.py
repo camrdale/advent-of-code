@@ -13,6 +13,7 @@ class Offset(NamedTuple):
 
 
 NEIGHBORS = [Offset(0, -1), Offset(1, 0), Offset(0, 1), Offset(-1, 0)]
+DIAGONAL_NEIGHBORS = [Offset(-1, -1), Offset(1, -1), Offset(1, 1), Offset(-1, 1)]
 
 
 class Coordinate(NamedTuple):
@@ -30,6 +31,9 @@ class Coordinate(NamedTuple):
     
     def neighbors(self) -> list['Coordinate']:
         return [self.add(offset) for offset in NEIGHBORS]
+
+    def diagonal_neighbors(self) -> list['Coordinate']:
+        return [self.add(offset) for offset in DIAGONAL_NEIGHBORS]
 
 
 class Path(NamedTuple):
