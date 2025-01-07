@@ -40,6 +40,10 @@ class InputParser:
         input = self.get_input()
         split_at = input.index('')
         return input[:split_at], input[split_at+1:]
+
+    def get_split_input(self) -> list[list[str]]:
+        """Get the input lines split by whitespace."""
+        return [line.split() for line in self.get_input()]
     
     def get_input_coords(self) -> list[Coordinate]:
         """Get the input converted into Coordinates."""
