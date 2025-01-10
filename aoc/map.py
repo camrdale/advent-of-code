@@ -58,6 +58,12 @@ class EmptyMap:
     def valid(self, coordinate: Coordinate) -> bool:
         """Check if a Coordinate is valid for this map."""
         return coordinate.valid(self.width, self.height)
+    
+    def at_location(self, coordinate: Coordinate) -> str:
+        for feature, coords in self.features.items():
+            if coordinate in coords:
+                return feature
+        return ''
 
     def shortest_paths(
             self, 
