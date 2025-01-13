@@ -63,6 +63,16 @@ class InputParser:
             results.append(match.groups())
         return results
 
+    def get_multipart_input(self) -> list[list[str]]:
+        """Get the input that is multiple parts, each part separated by a blank line."""
+        results: list[list[str]] = [[]]
+        for line in self.get_input():
+            if line == '':
+                results.append([])
+            else:
+                results[-1].append(line)
+        return results
+
     def get_multipart_parsed_input(
             self,
             *regexes: re.Pattern[str]
@@ -78,15 +88,12 @@ class InputParser:
         last match will be included in the dictionary.
         """
         results: list[dict[re.Pattern[str], tuple[str, ...]]] = []
-        result: dict[re.Pattern[str], tuple[str, ...]] = {}
-        for line in self.get_input():
-            if line == '':
-                results.append(result)
-                result = {}
-                continue
-            for regex in regexes:
-                match = regex.match(line)
-                if match:
-                    result[regex] = match.groups()
-        results.append(result)
+        for lines in self.get_multipart_input():
+            result: dict[re.Pattern[str], tuple[str, ...]] = {}
+            for line in lines:
+                for regex in regexes:
+                    match = regex.match(line)
+                    if match:
+                        result[regex] = match.groups()
+            results.append(result)
         return results
