@@ -11,8 +11,12 @@ class Offset(NamedTuple):
     def negate(self) -> 'Offset':
         return Offset(-self.x, -self.y)
 
+UP = Offset(0, -1)
+DOWN = Offset(0, 1)
+LEFT = Offset(-1, 0)
+RIGHT = Offset(1, 0)
 
-NEIGHBORS = [Offset(0, -1), Offset(1, 0), Offset(0, 1), Offset(-1, 0)]
+NEIGHBORS = [UP, RIGHT, DOWN, LEFT]
 DIAGONAL_NEIGHBORS = [Offset(-1, -1), Offset(1, -1), Offset(1, 1), Offset(-1, 1)]
 
 
