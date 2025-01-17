@@ -1,34 +1,11 @@
-#!/usr/bin/python
-
-from enum import IntEnum
 from typing import NamedTuple
 from queue import PriorityQueue
 
-from aoc.map import Coordinate, Offset, ParsedMap
+from aoc.map import Coordinate, Direction, ParsedMap
 
 WALL = '#'
 STARTING = 'S'
 END = 'E'
-
-
-class Direction(IntEnum):
-    NORTH = 0
-    EAST = 1
-    SOUTH = 2
-    WEST = 3
-
-    def next(self) -> 'Direction':
-        return Direction((self.value + 1) % 4)
-
-    def prev(self) -> 'Direction':
-        return Direction((self.value - 1) % 4)
-    
-    def offset(self, _directions: dict[int, Offset] ={
-            NORTH: Offset(0, -1),
-            EAST: Offset(1, 0),
-            SOUTH: Offset(0, 1),
-            WEST: Offset(-1, 0)}) -> Offset:
-        return _directions[self.value]
 
 
 class Situation(NamedTuple):
