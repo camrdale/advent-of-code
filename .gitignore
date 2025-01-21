@@ -163,3 +163,7 @@ cython_debug/
 
 # VSCode files
 .vscode
+
+# GraphViz files
+*.gv
+*.pdf
