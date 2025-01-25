@@ -1,25 +1,12 @@
 import collections
-from typing import NamedTuple, Any
+from typing import Any
 
 from aoc import log
 import aoc.map
 
 
-class Coordinate3D(NamedTuple):
-    z: int
-    location: aoc.map.Coordinate
-
-    @classmethod
-    def from_text(cls, text: str) -> 'Coordinate3D':
-        x,y,z = list(map(int, text.split(',')))
-        return cls(z, aoc.map.Coordinate(x,y))
-    
-    def __str__(self) -> str:
-        return f'(z={self.z},x={self.location.x},y={self.location.y})'
-
-
 class Brick:
-    def __init__(self, num: int, coord1: Coordinate3D, coord2: Coordinate3D):
+    def __init__(self, num: int, coord1: aoc.map.Coordinate3D, coord2: aoc.map.Coordinate3D):
         self.num = num
         self.lower_coord, self.upper_coord = sorted([coord1, coord2])
         self.rests_on: set[Brick] = set()
@@ -28,7 +15,7 @@ class Brick:
     @classmethod
     def from_text(cls, num:int, text: str) -> 'Brick':
         coord1_input, coord2_input = text.split('~')
-        return cls(num, Coordinate3D.from_text(coord1_input), Coordinate3D.from_text(coord2_input))
+        return cls(num, aoc.map.Coordinate3D.from_text(coord1_input), aoc.map.Coordinate3D.from_text(coord2_input))
 
     def __lt__(self, other: Any) -> bool:
         if type(other) != Brick:

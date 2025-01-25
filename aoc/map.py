@@ -12,6 +12,10 @@ class Offset(NamedTuple):
     def negate(self) -> 'Offset':
         return Offset(-self.x, -self.y)
 
+    def add(self, other: 'Offset') -> 'Offset':
+        return Offset(self.x + other.x, self.y + other.y)
+
+
 UP = Offset(0, -1)
 DOWN = Offset(0, 1)
 LEFT = Offset(-1, 0)
@@ -59,6 +63,38 @@ class Coordinate(NamedTuple):
 
     def diagonal_neighbors(self) -> list['Coordinate']:
         return [self.add(offset) for offset in DIAGONAL_NEIGHBORS]
+
+
+class Offset3D(NamedTuple):
+    z: int
+    offset: Offset
+
+    @classmethod
+    def from_text(cls, text: str) -> 'Offset3D':
+        x,y,z = list(map(int, text.split(',')))
+        return cls(z, Offset(x,y))
+    
+    def negate(self) -> 'Offset3D':
+        return Offset3D(-self.z, self.offset.negate())
+    
+    def add(self, offset: 'Offset3D') -> 'Offset3D':
+        return Offset3D(self.z + offset.z, self.offset.add(offset.offset))
+
+
+class Coordinate3D(NamedTuple):
+    z: int  # First so sorting by z works.
+    location: Coordinate
+
+    @classmethod
+    def from_text(cls, text: str) -> 'Coordinate3D':
+        x,y,z = list(map(int, text.split(',')))
+        return cls(z, Coordinate(x,y))
+    
+    def add(self, offset: Offset3D) -> 'Coordinate3D':
+        return Coordinate3D(self.z + offset.z, self.location.add(offset.offset))
+    
+    def __str__(self) -> str:
+        return f'(z={self.z},x={self.location.x},y={self.location.y})'
 
 
 class Path(NamedTuple):
