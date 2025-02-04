@@ -9,8 +9,8 @@ class InputParser:
     """A parser for reading and parsing an AoC input file or test input."""
 
     @classmethod
-    def for_test_data(cls, test_data: str, *args: Any) -> 'InputParser':
-        input = test_data.split('\n')
+    def for_string_input(cls, string_input: str, *args: Any) -> 'InputParser':
+        input = string_input.split('\n')
         # Remove empty lines from the start and end of the test data.
         while input[0] == '':
             del input[0]
