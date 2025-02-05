@@ -16,7 +16,7 @@ class Part2(runner.Part):
                 intcode_input[2] = verb
 
                 program = intcode.Program(list(intcode_input))
-                program.run()
+                program.run([])
                 if program.memory[0] == 19690720:
                     log.log(log.RESULT, f'Noun {noun} and verb {verb} results in output {program.memory[0]}: {100 * noun + verb}')
                     return 100 * noun + verb

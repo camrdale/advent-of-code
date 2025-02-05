@@ -15,7 +15,7 @@ class Part1(runner.Part):
             intcode_input[replacement[0]] = replacement[1]
 
         program = intcode.Program(list(intcode_input))
-        program.run()
+        program.run([])
 
         log.log(log.INFO, f'{input[0]} becomes {program.memory}')
         log.log(log.RESULT, f'Intcode program position 0: {program.memory[0]}')
