@@ -1,3 +1,5 @@
+import queue
+
 import aoc.input
 from aoc import log
 from aoc import runner
@@ -14,8 +16,9 @@ class Part1(runner.Part):
         for replacement in replacements:
             intcode_input[replacement[0]] = replacement[1]
 
-        program = intcode.Program(list(intcode_input))
-        program.run([])
+        program = intcode.Program('GravityAssist', list(intcode_input))
+        program.execute(queue.Queue(), queue.Queue())
+        program.join()
 
         log.log(log.INFO, f'{input[0]} becomes {program.memory}')
         log.log(log.RESULT, f'Intcode program position 0: {program.memory[0]}')
