@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import enum
 import queue
 import threading
 from typing import overload
@@ -45,159 +46,174 @@ class Memory:
         self.memory[index] = value
 
 
+class ParameterType(enum.Enum):
+    INPUT = 1
+    OUTPUT = 2
+
+
 class Operation(ABC):
+    parameter_types: tuple[ParameterType, ...] = ()
+    short_name = 'NIL'
+
     def __init__(self, program_name: str, parameter_modes: list[int], input: queue.Queue[int], output: queue.Queue[int]):
-        if len(parameter_modes) > self.num_parameters():
-            raise ValueError(f'{program_name}: Operation {self} expected no more than {self.num_parameters()} parameter modes, got {parameter_modes}')
+        if len(parameter_modes) > len(self.parameter_types):
+            raise ValueError(f'{program_name}: Operation {self} expected no more than {len(self.parameter_types)} parameter modes, got {parameter_modes}')
         self.program_name = program_name
         self.parameter_modes = parameter_modes
         self.input = input
         self.output = output
+        self.raw_parameters: list[str] = []
+        self.parsed_parameters: list[str] = []
+        self.result: str = ''
 
-    def parse_input_parameters(self, num_input_parameters: int, parameters: tuple[int, ...], memory: Memory) -> list[int]:
-        if len(parameters) != self.num_parameters():
-            raise ValueError(f'{self.program_name}: Expected {self.num_parameters()} parameters, got {parameters}')
+    def get_parameters(self, parameters: tuple[int, ...], memory: Memory) -> list[int]:
+        if len(parameters) != len(self.parameter_types):
+            raise ValueError(f'{self.program_name}: Expected {self.parameter_types} parameters, got {parameters}')
         parsed_parameters: list[int] = []
-        for i in range(num_input_parameters):
+        for i, parameter_type in enumerate(self.parameter_types):
+            self.raw_parameters.append(f'{parameters[i]}')
             if i >= len(self.parameter_modes) or self.parameter_modes[i] == 0:
                 # Position mode
-                parsed_parameters.append(memory[parameters[i]])
+                self.raw_parameters[-1] += 'p'
+                if parameter_type == ParameterType.INPUT:
+                    parsed_parameters.append(memory[parameters[i]])
+                else:
+                    parsed_parameters.append(parameters[i])
             elif self.parameter_modes[i] == 1:
                 # Immediate mode
-                parsed_parameters.append(parameters[i])
+                self.raw_parameters[-1] += 'i'
+                if parameter_type == ParameterType.INPUT:
+                    parsed_parameters.append(parameters[i])
+                else:
+                    raise ValueError(f'{self.program_name}: Unexpected immediate parameter mode for output')
             elif self.parameter_modes[i] == 2:
                 # Relative mode
-                parsed_parameters.append(memory[memory.relative_base + parameters[i]])
+                self.raw_parameters[-1] += 'r'
+                if parameter_type == ParameterType.INPUT:
+                    parsed_parameters.append(memory[memory.relative_base + parameters[i]])
+                else:
+                    parsed_parameters.append(memory.relative_base + parameters[i])
             else:
                 raise ValueError(f'{self.program_name}: Unexpected parameter mode: {self.parameter_modes[i]}')
+        self.parsed_parameters = list(map(str, parsed_parameters))
         return parsed_parameters
-
-    def parse_output_parameter(self, parameter_num: int, parameter: int, memory: Memory) -> int:
-        if parameter_num >= len(self.parameter_modes) or self.parameter_modes[parameter_num] == 0:
-            # Position mode
-            return parameter
-        elif self.parameter_modes[parameter_num] == 1:
-            # Immediate mode
-            raise ValueError(f'{self.program_name}: Unexpected immediate parameter mode for output')
-        elif self.parameter_modes[parameter_num] == 2:
-            # Relative mode
-            return memory.relative_base + parameter
-        else:
-            raise ValueError(f'{self.program_name}: Unexpected parameter mode for output: {self.parameter_modes[parameter_num]}')
-
-    @abstractmethod
-    def num_parameters(self) -> int:
-        pass
 
     @abstractmethod
     def apply(self, memory: Memory, *parameters: int) -> None | int:
         pass
 
+    def __str__(self) -> str:
+        s = [f'{self.short_name}({",".join(self.raw_parameters)})']
+        s.append(f'{self.short_name}({",".join(self.parsed_parameters)})')
+        if ParameterType.OUTPUT in self.parameter_types:
+            i = self.parameter_types.index(ParameterType.OUTPUT)
+            s.append(f'Memory[{self.parsed_parameters[i]}] = {self.result}')
+        else:
+            s.append(self.result)
+        return ' -> '.join(s)
+
 
 class Addition(Operation):
+    parameter_types = (ParameterType.INPUT, ParameterType.INPUT, ParameterType.OUTPUT)
+    short_name = 'ADD'
 
-
-    def num_parameters(self) -> int:
-        return 3
-    
     def apply(self, memory: Memory, *parameters: int) -> None:
-        input_parameter1, input_parameter2 = self.parse_input_parameters(2, parameters, memory)
+        input_parameter1, input_parameter2, output_location = self.get_parameters(parameters, memory)
         result = input_parameter1 + input_parameter2
-        memory[self.parse_output_parameter(2, parameters[2], memory)] = result
-        log.log(log.DEBUG, f'  {self.program_name}: Addition on {parameters[0]} ({input_parameter1}) and {parameters[1]} ({input_parameter2}) stored in {parameters[2]} ({result})')
+        memory[output_location] = result
+        self.result = str(result)
 
 
 class Multiplication(Operation):
-    def num_parameters(self) -> int:
-        return 3
+    parameter_types = (ParameterType.INPUT, ParameterType.INPUT, ParameterType.OUTPUT)
+    short_name = 'MUL'
     
     def apply(self, memory: Memory, *parameters: int) -> None:
-        input_parameter1, input_parameter2 = self.parse_input_parameters(2, parameters, memory)
+        input_parameter1, input_parameter2, output_location = self.get_parameters(parameters, memory)
         result = input_parameter1 * input_parameter2
-        memory[self.parse_output_parameter(2, parameters[2], memory)] = result
-        log.log(log.DEBUG, f'  {self.program_name}: Multiplication on {parameters[0]} ({input_parameter1}) and {parameters[1]} ({input_parameter2}) stored in {parameters[2]} ({result})')
+        memory[output_location] = result
+        self.result = str(result)
 
 
 class Input(Operation):
-    def num_parameters(self) -> int:
-        return 1
+    parameter_types = (ParameterType.OUTPUT,)
+    short_name = 'IN'
     
     def apply(self, memory: Memory, *parameters: int) -> None:
-        if len(parameters) != self.num_parameters():
-            raise ValueError(f'{self.program_name}: Expected {self.num_parameters()} parameters, got {parameters}')
+        output_location, = self.get_parameters(parameters, memory)
         if self.input.empty():
             log.log(log.DEBUG, f'  {self.program_name}: Waiting on input')
         input_value = self.input.get()
-        memory[self.parse_output_parameter(0, parameters[0], memory)] = input_value
-        log.log(log.DEBUG, f'  {self.program_name}: Input value {input_value} written to location {parameters[0]}')
+        memory[output_location] = input_value
+        self.result = str(input_value)
 
 
 class Output(Operation):
-    def num_parameters(self) -> int:
-        return 1
+    parameter_types = (ParameterType.INPUT,)
+    short_name = 'OUT'
     
     def apply(self, memory: Memory, *parameters: int) -> None:
-        input_parameter, = self.parse_input_parameters(1, parameters, memory)
+        input_parameter, = self.get_parameters(parameters, memory)
         self.output.put(input_parameter)
-        log.log(log.DEBUG, f'  {self.program_name}: Output value {input_parameter} read from {parameters[0]}')
+        self.result = f'Output {input_parameter}'
 
 
 class LessThan(Operation):
-    def num_parameters(self) -> int:
-        return 3
-    
+    parameter_types = (ParameterType.INPUT, ParameterType.INPUT, ParameterType.OUTPUT)
+    short_name = 'LT'
+
     def apply(self, memory: Memory, *parameters: int) -> None:
-        input_parameter1, input_parameter2 = self.parse_input_parameters(2, parameters, memory)
+        input_parameter1, input_parameter2, output_location = self.get_parameters(parameters, memory)
         result = 1 if input_parameter1 < input_parameter2 else 0
-        memory[self.parse_output_parameter(2, parameters[2], memory)] = result
-        log.log(log.DEBUG, f'  {self.program_name}: LessThan on {parameters[0]} ({input_parameter1}) and {parameters[1]} ({input_parameter2}) stored in {parameters[2]} ({result})')
+        memory[output_location] = result
+        self.result = str(result)
 
 
 class Equals(Operation):
-    def num_parameters(self) -> int:
-        return 3
-    
+    parameter_types = (ParameterType.INPUT, ParameterType.INPUT, ParameterType.OUTPUT)
+    short_name = 'EQ'
+
     def apply(self, memory: Memory, *parameters: int) -> None:
-        input_parameter1, input_parameter2 = self.parse_input_parameters(2, parameters, memory)
+        input_parameter1, input_parameter2, output_location = self.get_parameters(parameters, memory)
         result = 1 if input_parameter1 == input_parameter2 else 0
-        memory[self.parse_output_parameter(2, parameters[2], memory)] = result
-        log.log(log.DEBUG, f'  {self.program_name}: Equals on {parameters[0]} ({input_parameter1}) and {parameters[1]} ({input_parameter2}) stored in {parameters[2]} ({result})')
+        memory[output_location] = result
+        self.result = str(result)
 
 
 class JumpIfTrue(Operation):
-    def num_parameters(self) -> int:
-        return 2
-    
+    parameter_types = (ParameterType.INPUT, ParameterType.INPUT)
+    short_name = 'JIT'
+
     def apply(self, memory: Memory, *parameters: int) -> int | None:
-        input_parameter1, input_parameter2 = self.parse_input_parameters(2, parameters, memory)
+        input_parameter1, input_parameter2 = self.get_parameters(parameters, memory)
         if input_parameter1 != 0:
-            log.log(log.DEBUG, f'  {self.program_name}: JumpIfTrue on {parameters[0]} ({input_parameter1}) is jumping to {parameters[1]} ({input_parameter2})')
+            self.result = f'JUMP {input_parameter2}'
             return input_parameter2
-        log.log(log.DEBUG, f'  {self.program_name}: JumpIfTrue on {parameters[0]} ({input_parameter1}) does nothing')
+        self.result = 'NOOP'
         return None
 
 
 class JumpIfFalse(Operation):
-    def num_parameters(self) -> int:
-        return 2
+    parameter_types = (ParameterType.INPUT, ParameterType.INPUT)
+    short_name = 'JIF'
     
     def apply(self, memory: Memory, *parameters: int) -> int | None:
-        input_parameter1, input_parameter2 = self.parse_input_parameters(2, parameters, memory)
+        input_parameter1, input_parameter2 = self.get_parameters(parameters, memory)
         if input_parameter1 == 0:
-            log.log(log.DEBUG, f'  {self.program_name}: JumpIfFalse on {parameters[0]} ({input_parameter1}) is jumping to {parameters[1]} ({input_parameter2})')
+            self.result = f'JUMP {input_parameter2}'
             return input_parameter2
-        log.log(log.DEBUG, f'  {self.program_name}: JumpIfFalse on {parameters[0]} ({input_parameter1}) does nothing')
+        self.result = 'NOOP'
         return None
 
 
 class RelativeBaseOffset(Operation):
-    def num_parameters(self) -> int:
-        return 1
+    parameter_types = (ParameterType.INPUT,)
+    short_name = 'RBO'
     
     def apply(self, memory: Memory, *parameters: int) -> None:
-        input_parameter, = self.parse_input_parameters(1, parameters, memory)
+        input_parameter, = self.get_parameters(parameters, memory)
         memory.relative_base = input_parameter
-        log.log(log.DEBUG, f'  {self.program_name}: Relative base offset by {input_parameter} (read from {parameters[0]}) to {memory.relative_base}')
+        self.result = f'RelativeBase = {memory.relative_base}'
 
 
 class Program(threading.Thread):
@@ -232,18 +248,22 @@ class Program(threading.Thread):
         self.start()
 
     def run(self) -> None:
-        log.log(log.DEBUG, f'{self.name}: is starting')
+        log.log(log.INFO, f'{self.name}: is starting')
         instruction_pointer = 0
+        num_instructions = 0
         while True:
             instruction = self.memory[instruction_pointer]
+            num_instructions += 1
             opcode, parameter_modes = self.parse_instruction(instruction)
             if opcode == 99:
                 break
             operation = self.OPERATIONS[opcode](self.name, parameter_modes, self.input, self.output)
-            parameters = self.memory[(instruction_pointer+1):(instruction_pointer+1+operation.num_parameters())]
+            num_params = len(operation.parameter_types)
+            parameters = self.memory[(instruction_pointer+1):(instruction_pointer+1+num_params)]
             next_instruction_pointer = operation.apply(self.memory, *parameters)
+            log.log(log.DEBUG, f'  {self.name} {instruction:5d}: {operation}')
             if next_instruction_pointer is not None:
                 instruction_pointer = next_instruction_pointer
             else:
-                instruction_pointer += 1 + operation.num_parameters()
-        log.log(log.DEBUG, f'{self.name}: is done')
+                instruction_pointer += 1 + num_params
+        log.log(log.INFO, f'{self.name}: is done, ran {num_instructions} instructions')
