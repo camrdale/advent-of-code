@@ -14,6 +14,9 @@ class Offset(NamedTuple):
 
     def add(self, other: 'Offset') -> 'Offset':
         return Offset(self.x + other.x, self.y + other.y)
+    
+    def manhattan_distance(self) -> int:
+        return abs(self.x) + abs(self.y)
 
 
 UP = Offset(0, -1)
