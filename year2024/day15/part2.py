@@ -50,8 +50,6 @@ class WarehouseMap(ParsedMap):
         self.current_pos = self.current_pos._replace(x=self.current_pos.x*2)
         self.locations: dict[Coordinate, str | Box] = {}
 
-        self.width *= 2
-
         for coord in self.features[WALL]:
             self.locations[coord._replace(x=2*coord.x)] = WALL
             self.locations[coord._replace(x=2*coord.x + 1)] = WALL

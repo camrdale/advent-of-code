@@ -12,21 +12,21 @@ class Part2(Part):
 
         max_energized = 0
         max_energized_locations: set[Coordinate] = set()
-        for y in range(0, map.height):
+        for y in range(map.min_y, map.max_y + 1):
             energized_locations = map.energize(Beam(Coordinate(-1,y), RIGHT))
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)
                 max_energized_locations = energized_locations
-            energized_locations = map.energize(Beam(Coordinate(map.width,y), LEFT))
+            energized_locations = map.energize(Beam(Coordinate(map.max_x+1,y), LEFT))
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)
                 max_energized_locations = energized_locations
-        for x in range(0, map.width):
+        for x in range(map.min_x, map.max_x + 1):
             energized_locations = map.energize(Beam(Coordinate(x,-1), DOWN))
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)
                 max_energized_locations = energized_locations
-            energized_locations = map.energize(Beam(Coordinate(x,map.height), UP))
+            energized_locations = map.energize(Beam(Coordinate(x,map.max_y+1), UP))
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)
                 max_energized_locations = energized_locations

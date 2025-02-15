@@ -59,7 +59,7 @@ class Part1(runner.Part):
         input = parser.get_input()
 
         map = TrailMap(input)
-        longest_path = map.longest_path(aoc.map.Coordinate(1,0), aoc.map.Coordinate(map.width-2, map.height-1))
+        longest_path = map.longest_path(aoc.map.Coordinate(map.min_x+1,map.min_y), aoc.map.Coordinate(map.max_x-1, map.max_y))
         log.log(log.INFO, map.print_map({'O': set(longest_path.previous)}))
 
         log.log(log.RESULT, f'Longest hike has length: {longest_path.length}')

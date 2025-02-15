@@ -26,7 +26,7 @@ class Part1(Part):
 
         total_load = 0
         for rock in map.features[ROUNDED]:
-            total_load += map.height - rock.y
+            total_load += map.max_y + 1 - rock.y
 
         log(RESULT, f'Total load on the north support beams: {total_load}')
         return total_load

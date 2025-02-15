@@ -37,14 +37,14 @@ class PartNumberMap(ParsedMap):
 
         next_offset = Offset(1, 0)
         location = starting_location.add(next_offset)
-        while location.valid(self.width, self.height) and location in self.number_locations:
+        while self.valid(location) and location in self.number_locations:
             full_part_number += self.get_location(location)
             used_locations.add(location)
             location = location.add(next_offset)
 
         previous_offset = Offset(-1, 0)
         location = starting_location.add(previous_offset)
-        while location.valid(self.width, self.height) and location in self.number_locations:
+        while self.valid(location) and location in self.number_locations:
             full_part_number = self.get_location(location) + full_part_number
             used_locations.add(location)
             location = location.add(previous_offset)

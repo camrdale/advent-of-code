@@ -48,10 +48,10 @@ class Part1(Part):
         if starting_pos is None:
             print('ERROR: malformed input')
             return -1
-        log(DEBUG, map.width, map.height)
+        log(DEBUG, map.min_x, map.min_y, map.max_x, map.max_y)
         visualizer: Visualizer | None = None
         if self.visualize:
-            visualizer = Visualizer(map.width, map.height)
+            visualizer = Visualizer(map.max_x + 1, map.max_y + 1)
 
         direction = starting_direction
         current_pos = starting_pos
@@ -60,7 +60,7 @@ class Part1(Part):
             visualizer.draw_board(obstacles, visited_positions_direction, current_pos, direction, 1)
         while True:
             next_pos = current_pos.add(INCREMENTS[direction])
-            if not (0 <= next_pos[0] < map.width and 0 <= next_pos[1] < map.height):
+            if not map.valid(next_pos):
                 break
             if next_pos in obstacles:
                 direction = (direction + 1) % 4

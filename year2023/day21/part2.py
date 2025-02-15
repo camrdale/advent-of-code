@@ -12,7 +12,7 @@ class Part2(runner.Part):
 
         map = shared.GardenMap(input)
 
-        log.log(log.DEBUG, f'Staring coord: {map.starting_point}, grid = {map.width}x{map.height}')
+        log.log(log.DEBUG, f'Staring coord: {map.starting_point}, grid = {map.max_x+1}x{map.max_y+1}')
         num_column = 0
         num_row = 0
         for rock in map.features['#']:
@@ -42,30 +42,30 @@ class Part2(runner.Part):
 
         # At the ends of the squares that are fully reachable are 4 where we start in the middle of one side.
         remaining_steps = 130  # 26501365 − 66 − (131×202299)
-        total_reachable_plots += len(map.reachable_plots(map.starting_point._replace(y=0), remaining_steps))
-        total_reachable_plots += len(map.reachable_plots(map.starting_point._replace(y=map.height-1), remaining_steps))
-        reachable = map.reachable_plots(map.starting_point._replace(x=0), remaining_steps)
+        total_reachable_plots += len(map.reachable_plots(map.starting_point._replace(y=map.min_y), remaining_steps))
+        total_reachable_plots += len(map.reachable_plots(map.starting_point._replace(y=map.max_y), remaining_steps))
+        reachable = map.reachable_plots(map.starting_point._replace(x=map.min_x), remaining_steps)
         total_reachable_plots += len(reachable)
         log.log(log.DEBUG, map.print_map({'O': reachable}))
-        total_reachable_plots += len(map.reachable_plots(map.starting_point._replace(x=map.width-1), remaining_steps))
+        total_reachable_plots += len(map.reachable_plots(map.starting_point._replace(x=map.max_x), remaining_steps))
 
         # There are also n each small corner squares where we have to start in each corner.
         remaining_steps -= 66  # 66 steps to get to the small corner square's corner
         reachable = map.reachable_plots(aoc.map.Coordinate(0, 0), remaining_steps)
         total_reachable_plots += n * len(reachable)
         log.log(log.DEBUG, map.print_map({'O': reachable}))
-        total_reachable_plots += n * len(map.reachable_plots(aoc.map.Coordinate(0, map.height - 1), remaining_steps))
-        total_reachable_plots += n * len(map.reachable_plots(aoc.map.Coordinate(map.width - 1, 0), remaining_steps))
-        total_reachable_plots += n * len(map.reachable_plots(aoc.map.Coordinate(map.width - 1, map.height - 1), remaining_steps))
+        total_reachable_plots += n * len(map.reachable_plots(aoc.map.Coordinate(map.min_x, map.max_y), remaining_steps))
+        total_reachable_plots += n * len(map.reachable_plots(aoc.map.Coordinate(map.max_x, map.min_y), remaining_steps))
+        total_reachable_plots += n * len(map.reachable_plots(aoc.map.Coordinate(map.max_x, map.max_y), remaining_steps))
 
         # And (n - 1) each large corner squares where we have to start in each corner.
         remaining_steps += 131  # width/height less steps to get back to the previous large square's corner
         reachable = map.reachable_plots(aoc.map.Coordinate(0, 0), remaining_steps)
         total_reachable_plots += (n - 1) * len(reachable)
         log.log(log.DEBUG, map.print_map({'O': reachable}))
-        total_reachable_plots += (n - 1) * len(map.reachable_plots(aoc.map.Coordinate(0, map.height - 1), remaining_steps))
-        total_reachable_plots += (n - 1) * len(map.reachable_plots(aoc.map.Coordinate(map.width - 1, 0), remaining_steps))
-        total_reachable_plots += (n - 1) * len(map.reachable_plots(aoc.map.Coordinate(map.width - 1, map.height - 1), remaining_steps))
+        total_reachable_plots += (n - 1) * len(map.reachable_plots(aoc.map.Coordinate(map.min_x, map.max_y), remaining_steps))
+        total_reachable_plots += (n - 1) * len(map.reachable_plots(aoc.map.Coordinate(map.max_x, map.min_y), remaining_steps))
+        total_reachable_plots += (n - 1) * len(map.reachable_plots(aoc.map.Coordinate(map.max_x, map.max_y), remaining_steps))
 
         log.log(log.RESULT, f'Reachable plots in {num_steps} steps: {total_reachable_plots}')
         return total_reachable_plots

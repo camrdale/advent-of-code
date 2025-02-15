@@ -96,18 +96,18 @@ class Part2(runner.Part):
 
         map = TrailMap(input)
 
-        branch_points = map.branch_points(aoc.map.Coordinate(1,0), aoc.map.Coordinate(map.width-2, map.height-1))
+        branch_points = map.branch_points(aoc.map.Coordinate(map.min_x+1,map.min_y), aoc.map.Coordinate(map.max_x-1, map.max_y))
         log.log(log.DEBUG, f'Built map of {len(branch_points)} different branch points')
-        log.log(log.DEBUG, f'Start pos neighbors: {branch_points[aoc.map.Coordinate(1,0)].neighbors}')
-        log.log(log.DEBUG, f'End pos neighbors: {branch_points[aoc.map.Coordinate(map.width-2, map.height-1)].neighbors}')
+        log.log(log.DEBUG, f'Start pos neighbors: {branch_points[aoc.map.Coordinate(map.min_x+1,map.min_y)].neighbors}')
+        log.log(log.DEBUG, f'End pos neighbors: {branch_points[aoc.map.Coordinate(map.max_x-1, map.max_y)].neighbors}')
         log.log(log.DEBUG, map.print_map({'X': set(branch_points.keys())}))
 
-        stack: list[aoc.map.Path] = [aoc.map.Path(0, aoc.map.Coordinate(1,0), frozenset())]
+        stack: list[aoc.map.Path] = [aoc.map.Path(0, aoc.map.Coordinate(map.min_x+1,map.min_y), frozenset())]
         longest_path: aoc.map.Path | None = None
         while stack:
             path = stack.pop()
 
-            if path.location == aoc.map.Coordinate(map.width-2, map.height-1):
+            if path.location == aoc.map.Coordinate(map.max_x-1, map.max_y):
                 log.log(log.INFO, f'Found a hike of length {path.length}')
                 if longest_path is None or path.length > longest_path.length:
                     longest_path = path

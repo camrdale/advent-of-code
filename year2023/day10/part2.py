@@ -13,9 +13,9 @@ class Part2(Part):
         loop_nodes = map.loop_nodes()
 
         enclosed = 0
-        for y in range(map.height):
+        for y in range(map.min_y, map.max_y + 1):
             inside = False
-            for x in range(map.width):
+            for x in range(map.min_x, map.max_x + 1):
                 location = Coordinate(x,y)
                 if location in loop_nodes:
                     pipe = map.at_location(location)

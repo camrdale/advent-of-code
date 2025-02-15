@@ -53,7 +53,7 @@ class Part1(runner.Part):
             else:
                 ball_tiles.discard(location)
         
-        screen = aoc.map.EmptyMap(max_x + 1, max_y + 1)
+        screen = aoc.map.EmptyMap(0, 0, max_x, max_y)
         log.log(log.INFO, screen.print_map({
             u'\u2588': wall_tiles,
             u'\u2592': block_tiles,

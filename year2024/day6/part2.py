@@ -22,11 +22,11 @@ STARTING_DIRECTIONS = {
     '<': LEFT}
 
 
-def contains_loop(obstacles: set[Coordinate], pos: Coordinate, direction: int, width: int, height: int) -> bool:
+def contains_loop(map: ParsedMap, obstacles: set[Coordinate], pos: Coordinate, direction: int) -> bool:
     visited_positions_direction: set[tuple[Coordinate, int]] = set([(pos, direction)])
     while True:
         next_pos = pos.add(INCREMENTS[direction])
-        if not next_pos.valid(width, height):
+        if not map.valid(next_pos):
             return False
         if next_pos in obstacles:
             direction = (direction + 1) % 4
@@ -56,7 +56,7 @@ class Part2(Part):
         if starting_pos is None:
             print('ERROR: malformed input')
             return -1
-        log(DEBUG, map.width, map.height)
+        log(DEBUG, map.min_x, map.min_y, map.max_x, map.max_y)
 
         direction = starting_direction
         current_pos = starting_pos
@@ -70,7 +70,7 @@ class Part2(Part):
                 direction = (direction + 1) % 4
                 continue
 
-            if next_pos not in visited_positions and contains_loop(obstacles | set([next_pos]), current_pos, direction, map.width, map.height):
+            if next_pos not in visited_positions and contains_loop(map, obstacles | set([next_pos]), current_pos, direction):
                 looping_obstacles.add(next_pos)
 
             current_pos = next_pos

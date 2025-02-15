@@ -7,7 +7,7 @@ WALL = '#'
 
 class ReindeerMaze(EmptyMap):
     def __init__(self, width: int, height: int):
-        super().__init__(width, height)
+        super().__init__(0, 0, width-1, height-1, save_features=WALL)
         self.walls: set[Coordinate] = self.features[WALL]
         self.starting_pos: Coordinate = Coordinate(0,0)
         self.end_pos: Coordinate = Coordinate(width-1,height-1)

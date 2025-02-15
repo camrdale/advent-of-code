@@ -4,15 +4,15 @@ import json
 import pathlib
 import queue
 import threading
-from typing import overload, Any
+from typing import overload, Any, NamedTuple, Self
 
 from aoc import log
 
 
 class Memory:
-    def __init__(self, initial_memory: list[int]):
+    def __init__(self, initial_memory: list[int], relative_base: int = 0):
         self.memory = list(initial_memory)
-        self._relative_base: int = 0
+        self._relative_base: int = relative_base
 
     @property
     def relative_base(self) -> int:
@@ -57,7 +57,7 @@ class Operation(ABC):
     parameter_types: tuple[ParameterType, ...] = ()
     short_name = 'NIL'
 
-    def __init__(self, program_name: str, parameter_modes: list[int], input: queue.Queue[int], output: queue.Queue[int], memory: Memory):
+    def __init__(self, program_name: str, parameter_modes: list[int], input: queue.Queue[int], output: queue.Queue[int], memory: Memory, blocked: threading.Event):
         if len(parameter_modes) > len(self.parameter_types):
             raise ValueError(f'{program_name}: Operation {self} expected no more than {len(self.parameter_types)} parameter modes, got {parameter_modes}')
         self.program_name = program_name
@@ -65,6 +65,7 @@ class Operation(ABC):
         self.input = input
         self.output = output
         self.memory = memory
+        self.blocked = blocked
         self.raw_parameters: list[str] = []
         self.parsed_parameters: list[str] = []
         self.result: str = ''
@@ -155,7 +156,9 @@ class Input(Operation):
         output_location, = self.get_parameters(parameters)
         if self.input.empty():
             log.log(log.DEBUG, f'  {self.program_name}: Waiting on input')
+            self.blocked.set()
         input_value = self.input.get()
+        self.blocked.clear()
         self.write(output_location, input_value)
 
 
@@ -225,6 +228,16 @@ class RelativeBaseOffset(Operation):
         self.result = f'RelativeBase = {self.memory.relative_base}'
 
 
+class ProgramState(NamedTuple):
+    memory: list[int]
+    relative_base: int
+    instruction_pointer: int
+
+    @classmethod
+    def initial_state(cls, initial_memory: list[int]) -> Self:
+        return cls(initial_memory, 0, 0)
+
+
 class Program(threading.Thread):
     OPERATIONS: dict[int, type[Operation]] = {
         1: Addition,
@@ -238,11 +251,22 @@ class Program(threading.Thread):
         9: RelativeBaseOffset,
     }
 
-    def __init__(self, name: str, memory: list[int], visualize: bool = False):
+    def __init__(self, name: str, memory: list[int], instruction_pointer: int = 0, relative_base: int = 0, visualize: bool = False):
         super().__init__(name=name, daemon=True)
-        self.memory = Memory(memory)
+        self.memory = Memory(memory, relative_base=relative_base)
+        self.instruction_pointer = instruction_pointer
         self.visualize = visualize
         self.output_json: dict[Any, Any] = {}
+
+    def current_state(self) -> ProgramState:
+        if not self.blocked.is_set():
+            log.log(log.DEBUG, f'  {self.name}: Waiting to dump state until blocked')
+        self.blocked.wait()
+        return ProgramState(list(self.memory.memory), self.memory.relative_base, self.instruction_pointer)
+    
+    @classmethod
+    def from_state(cls, name: str, state: ProgramState, visualize: bool = False) -> Self:
+        return cls(name, state.memory, relative_base=state.relative_base, instruction_pointer=state.instruction_pointer, visualize=visualize)
 
     def parse_instruction(self, instruction: int) -> tuple[int, list[int]]:
         opcode = instruction % 100
@@ -264,30 +288,30 @@ class Program(threading.Thread):
                 'relative_base': self.memory.relative_base,
             }
             self.output_json['operations'] = []
+        self.blocked = threading.Event()
         self.start()
 
     def run(self) -> None:
         log.log(log.INFO, f'{self.name}: is starting')
-        instruction_pointer = 0
         num_instructions = 0
         while True:
-            instruction = self.memory[instruction_pointer]
+            instruction = self.memory[self.instruction_pointer]
             num_instructions += 1
             opcode, parameter_modes = self.parse_instruction(instruction)
             if opcode == 99:
                 break
-            operation = self.OPERATIONS[opcode](self.name, parameter_modes, self.input, self.output, self.memory)
+            operation = self.OPERATIONS[opcode](self.name, parameter_modes, self.input, self.output, self.memory, self.blocked)
             num_params = len(operation.parameter_types)
-            parameters = self.memory[(instruction_pointer+1):(instruction_pointer+1+num_params)]
+            parameters = self.memory[(self.instruction_pointer+1):(self.instruction_pointer+1+num_params)]
             next_instruction_pointer = operation.apply(*parameters)
             log.log(log.DEBUG, f'  {self.name} {instruction:5d}: {operation}')
             if self.visualize:
                 input_parameter_locations = operation.reads_from
                 for i, input_parameter_location in enumerate(input_parameter_locations):
                     if input_parameter_location < 0:
-                        input_parameter_locations[i] = instruction_pointer + abs(input_parameter_location)
+                        input_parameter_locations[i] = self.instruction_pointer + abs(input_parameter_location)
                 operation_json = {
-                    'instruction_pointer': instruction_pointer,
+                    'instruction_pointer': self.instruction_pointer,
                     'instruction': instruction,
                     'num_parameters': num_params,
                     'short_name': operation.short_name,
@@ -302,9 +326,9 @@ class Program(threading.Thread):
                     operation_json['output_value'] = operation.value_written
                 self.output_json['operations'].append(operation_json)
             if next_instruction_pointer is not None:
-                instruction_pointer = next_instruction_pointer
+                self.instruction_pointer = next_instruction_pointer
             else:
-                instruction_pointer += 1 + num_params
+                self.instruction_pointer += 1 + num_params
         log.log(log.INFO, f'{self.name}: is done, ran {num_instructions} instructions')
         if self.visualize:
             with (pathlib.Path(__file__).parent.resolve() / 'visualizer' / 'dumps' / f'{self.name}.json').open('w') as f:

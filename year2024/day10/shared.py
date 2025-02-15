@@ -21,7 +21,7 @@ class TopographicMap(ParsedMap):
             for coord in coords:
                 for offset in NEIGHBORS:
                     next_coord = coord.add(offset)
-                    if next_coord.valid(self.width, self.height) and next_coord in self.features[str(altitude + 1)]:
+                    if self.valid(next_coord) and next_coord in self.features[str(altitude + 1)]:
                         next_coords.add(next_coord)
             coords = next_coords
             altitude += 1
@@ -38,7 +38,7 @@ class TopographicMap(ParsedMap):
             for coord in coords:
                 for offset in NEIGHBORS:
                     next_coord = coord.add(offset)
-                    if next_coord.valid(self.width, self.height) and next_coord in self.features[str(altitude + 1)]:
+                    if self.valid(next_coord) and next_coord in self.features[str(altitude + 1)]:
                         next_coords.append(next_coord)
             coords = next_coords
             altitude += 1

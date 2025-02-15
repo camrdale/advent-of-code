@@ -20,14 +20,14 @@ class Part2(Part):
 
         delta_x: dict[int, int] = {}
         delta = 0
-        for i in range(map.width):
+        for i in range(map.min_x, map.max_x + 1):
             if i not in galaxy_xs:
                 delta += expansion_multiplier - 1
             delta_x[i] = delta
 
         delta_y: dict[int, int] = {}
         delta = 0
-        for i in range(map.height):
+        for i in range(map.min_y, map.max_y + 1):
             if i not in galaxy_ys:
                 delta += expansion_multiplier - 1
             delta_y[i] = delta

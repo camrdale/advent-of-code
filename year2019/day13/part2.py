@@ -71,7 +71,7 @@ class BreakoutPlayer(threading.Thread):
             if tile_id == return_on_update or (self.initialized and not self.block_tiles):
                 break
 
-        screen = aoc.map.EmptyMap(self.max_x + 1, self.max_y + 1)
+        screen = aoc.map.EmptyMap(0, 0, self.max_x, self.max_y)
         log.log(log.INFO, screen.print_map({
             u'\u2588': self.wall_tiles,
             u'\u2592': self.block_tiles,

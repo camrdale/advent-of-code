@@ -28,16 +28,10 @@ class Part2(runner.Part):
         robot_input.put(-1)
         robot.join()
 
-        re_zero = aoc.map.Offset(
-            min(location.x for location in robot.painted_white) - 1,
-            min(location.y for location in robot.painted_white) - 1
-            ).negate()
-
-        white_squares = set(location.add(re_zero) for location in robot.painted_white)
-        width = max(location.x for location in white_squares) + 2
-        height = max(location.y for location in white_squares) + 2
-        painted_map = aoc.map.EmptyMap(width, height)
-        log.log(log.INFO, painted_map.print_map({u'\u2588': white_squares}))
+        painted_map = aoc.map.UnknownMap(save_features=u'\u2588')
+        for white_square in robot.painted_white:
+            painted_map.add_feature(u'\u2588', white_square)
+        log.log(log.INFO, painted_map.print_map())
 
         log.log(log.RESULT, f'See INFO logs for printed image containing: "GLBEPJZP"')
         return 'GLBEPJZP'

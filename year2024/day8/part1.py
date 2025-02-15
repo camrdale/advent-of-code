@@ -13,7 +13,7 @@ class Part1(Part):
 
         map = ParsedMap(input, string.ascii_lowercase + string.ascii_uppercase + '0123456789')
 
-        log(DEBUG, map.width, map.height)
+        log(DEBUG, map.min_x, map.min_y, map.max_x, map.max_y)
         log(DEBUG, map.features)
 
         antinodes: set[Coordinate] = set()

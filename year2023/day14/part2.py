@@ -18,7 +18,7 @@ class RockMap(ParsedMap):
     def total_load(self) -> int:
         load = 0
         for rock in self.features[ROUNDED]:
-            load += self.height - rock.y
+            load += self.max_y + 1 - rock.y
         return load
 
     def spin(self) -> None:

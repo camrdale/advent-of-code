@@ -10,7 +10,7 @@ class Part2(Part):
     def run(self, parser: InputParser) -> int:
         map = TrafficMap(parser, 4, 10)
 
-        minimal_heat_loss_path = map.minimal_heat_loss_path(Coordinate(0,0), Direction.EAST, Coordinate(map.width - 1, map.height - 1))
+        minimal_heat_loss_path = map.minimal_heat_loss_path(Coordinate(map.min_x,map.min_y), Direction.EAST, Coordinate(map.max_x, map.max_y))
 
         log(RESULT, f'The least heat loss path is: {minimal_heat_loss_path}')
         return minimal_heat_loss_path

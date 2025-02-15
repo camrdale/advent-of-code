@@ -1,6 +1,7 @@
 from collections import defaultdict
+import collections.abc
 from enum import IntEnum
-from typing import NamedTuple
+from typing import NamedTuple, Self
 from queue import PriorityQueue
 
 
@@ -46,6 +47,14 @@ class Direction(IntEnum):
             SOUTH: Offset(0, 1),
             WEST: Offset(-1, 0)}) -> Offset:
         return _directions[self.value]
+
+    @classmethod
+    def from_offset(cls, offset: Offset, _offsets: dict[Offset, int] = {
+            Offset(0, -1): NORTH,
+            Offset(1, 0): EAST,
+            Offset(0, 1): SOUTH,
+            Offset(-1, 0): WEST}) -> Self:
+        return cls(_offsets[offset])
 
 
 class Coordinate(NamedTuple):
@@ -112,16 +121,32 @@ class Path(NamedTuple):
                 if neighbor not in self.previous]
 
 
-class EmptyMap:
-    def __init__(self, width: int, height: int):
-        self.height = height
-        self.width = width
-        self.save_features = ''
+class UnknownMap:
+    def __init__(self, save_features: str = ''):
+        self.min_x = 0
+        self.min_y = 0
+        self.max_x = 0
+        self.max_y = 0
+        self.save_features = save_features
         self.features: dict[str, set[Coordinate]] = defaultdict(set)
+    
+    def expand_map(self, location:Coordinate) -> None:
+        if location.x < self.min_x:
+            self.min_x = location.x
+        if location.x > self.max_x:
+            self.max_x = location.x
+        if location.y < self.min_y:
+            self.min_y = location.y
+        if location.y > self.max_y:
+            self.max_y = location.y
 
+    def add_feature(self, feature: str, location: Coordinate) -> None:
+        self.features[feature].add(location)
+        self.expand_map(location)
+    
     def valid(self, coordinate: Coordinate) -> bool:
         """Check if a Coordinate is valid for this map."""
-        return coordinate.valid(self.width, self.height)
+        return self.min_x <= coordinate.x <= self.max_x and self.min_y <= coordinate.y <= self.max_y
     
     def at_location(self, coordinate: Coordinate) -> str:
         for feature, coords in self.features.items():
@@ -169,13 +194,13 @@ class EmptyMap:
 
     def print_map(
             self, 
-            additional_features: dict[str, set[Coordinate]] | None = None, 
+            additional_features: collections.abc.Mapping[str, collections.abc.Set[Coordinate]] | None = None, 
             additional_feature_priority: bool = True) -> str:
         if additional_features is None:
             additional_features = {}
         s = ''
-        for y in range(self.height):
-            for x in range(self.width):
+        for y in range(self.min_y, self.max_y + 1):
+            for x in range(self.min_x, self.max_x + 1):
                 s += self.print_coordinate(Coordinate(x,y), additional_features, additional_feature_priority)
             s += '\n'
         return s
@@ -183,7 +208,7 @@ class EmptyMap:
     def print_coordinate(
             self, 
             c: Coordinate, 
-            additional_features: dict[str, set[Coordinate]],
+            additional_features: collections.abc.Mapping[str, collections.abc.Set[Coordinate]],
             additional_feature_priority: bool) -> str:
         if additional_feature_priority:
             for feature, coords in additional_features.items():
@@ -199,12 +224,22 @@ class EmptyMap:
         return '.'
 
 
-class ParsedMap(EmptyMap):
+class EmptyMap(UnknownMap):
+    def __init__(self, min_x: int, min_y: int, max_x: int, max_y: int, save_features: str = ''):
+        super().__init__(save_features=save_features)
+        self.min_x = min_x
+        self.min_y = min_y
+        self.max_x = max_x
+        self.max_y = max_y
+
+
+class ParsedMap(UnknownMap):
     def __init__(self, lines: list[str], save_features: str):
         """Construct a map from the 2D-array in lines, saving the Coordinates of any characters in save_features."""
-        super().__init__(len(lines[0]), len(lines))
-        self.save_features = save_features
+        super().__init__(save_features=save_features)
         for y, line in enumerate(lines):
             for x, c in enumerate(line):
                 if c in save_features:
-                    self.features[c].add(Coordinate(x,y))
+                    self.add_feature(c, Coordinate(x,y))
+                else:
+                    self.expand_map(Coordinate(x,y))

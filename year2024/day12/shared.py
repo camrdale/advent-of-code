@@ -139,14 +139,14 @@ class Garden(ParsedMap):
 
     def merge(self):
         """Merge any neighboring plots of the same type."""
-        for y in range(self.height):
-            for x in range(self.width):
+        for y in range(self.min_y, self.max_y + 1):
+            for x in range(self.min_x, self.max_x + 1):
                 c = Coordinate(x,y)
                 log(DEBUG, 'Processing', c)
                 region = self.regions[c]
                 for neighbor_offset in DOWNSTREAM_NEIGHBORS:
                     neighbor = c.add(neighbor_offset)
-                    if neighbor.valid(self.width, self.height):
+                    if self.valid(neighbor):
                         log(DEBUG, 'Checking', region.plant, 'at', c, 'against', neighbor)
                         neighbor_region = self.regions[neighbor]
                         if neighbor_region.plant == region.plant and neighbor_region != region:
@@ -165,8 +165,8 @@ class Garden(ParsedMap):
     
     def __str__(self) -> str:
         s = ''
-        for y in range(self.height):
-            for x in range(self.width):
+        for y in range(self.min_y, self.max_y + 1):
+            for x in range(self.min_x, self.max_x + 1):
                 c = Coordinate(x,y)
                 region = self.regions[c]
                 s += region.plant
