@@ -11,8 +11,6 @@ class Part1(runner.Part):
         intcode_input = list(map(int, input[0].split(',')))
 
         ascii = shared.AsciiProgram(intcode_input)
-        log.log(log.INFO, ascii.map.print_map(additional_features={
-            shared.DIRECTIONS[ascii.map.starting_direction]: set([ascii.map.starting_location])}))
 
         intersections = ascii.map.intersections()
         log.log(log.INFO, ascii.map.print_map(additional_features={

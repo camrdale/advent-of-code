@@ -39,8 +39,8 @@ class TrafficMap(ParsedMap):
                 break
             heat_loss += self.heat_losses[location]
             if i >= self.min_turn_distance:
-                next_paths.append(HeatLossPath(path.heat_loss + heat_loss, location, path.direction.next()))
-                next_paths.append(HeatLossPath(path.heat_loss + heat_loss, location, path.direction.prev()))
+                next_paths.append(HeatLossPath(path.heat_loss + heat_loss, location, path.direction.right()))
+                next_paths.append(HeatLossPath(path.heat_loss + heat_loss, location, path.direction.left()))
         return next_paths
 
     def minimal_heat_loss_path(

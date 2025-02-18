@@ -17,11 +17,11 @@ class Situation(NamedTuple):
         return Situation(forward_location, self.direction)
     
     def clockwise(self) -> 'Situation':
-        clockwise_direction = self.direction.next()
+        clockwise_direction = self.direction.right()
         return Situation(self.location.add(clockwise_direction.offset()), clockwise_direction)
     
     def counterclockwise(self) -> 'Situation':
-        counterclockwise_direction = self.direction.prev()
+        counterclockwise_direction = self.direction.left()
         return Situation(self.location.add(counterclockwise_direction.offset()), counterclockwise_direction)
 
 

@@ -35,10 +35,10 @@ class Direction(IntEnum):
     SOUTH = 2
     WEST = 3
 
-    def next(self) -> 'Direction':
+    def right(self) -> 'Direction':
         return Direction((self.value + 1) % 4)
 
-    def prev(self) -> 'Direction':
+    def left(self) -> 'Direction':
         return Direction((self.value - 1) % 4)
     
     def offset(self, _directions: dict[int, Offset] ={

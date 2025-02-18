@@ -11,7 +11,7 @@ class Part2(runner.Part):
         intcode_input = list(map(int, input[0].split(',')))
 
         ascii = shared.AsciiProgram(intcode_input)
-        result = ascii.find_paths()
+        result = ascii.find_and_run_path()
    
         log.log(log.RESULT, f'The dust collected by the robot: {result}')
         return result
