@@ -61,9 +61,12 @@ class Coordinate(NamedTuple):
     x: int
     y: int
 
-    def difference(self, other: 'Coordinate') -> Offset:
-        return Offset(self.x - other.x, self.y - other.y)
+    def difference(self, from_coordinate: 'Coordinate') -> Offset:
+        return Offset(self.x - from_coordinate.x, self.y - from_coordinate.y)
 
+    def direction(self,  from_coordinate: 'Coordinate') -> Direction:
+        return Direction.from_offset(self.difference(from_coordinate))
+    
     def add(self, offset: Offset) -> 'Coordinate':
         return Coordinate(self.x + offset.x, self.y + offset.y)
     

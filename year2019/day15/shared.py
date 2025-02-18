@@ -54,8 +54,7 @@ class AreaMap(aoc.map.UnknownMap):
             while next_undiscovered:
                 # Go in the direction of the undiscovered location.
                 next_location = next_undiscovered[0]
-                current_direction = aoc.map.Direction.from_offset(
-                    next_location.difference(current_location))
+                current_direction = next_location.direction(current_location)
                 droid_input.put(DIRECTION_TO_COMMAND[current_direction])
                 status = droid_output.get()
                 while status != STATUS_WALL:
