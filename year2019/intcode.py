@@ -292,7 +292,7 @@ class Program(threading.Thread):
         self.start()
 
     def run(self) -> None:
-        log.log(log.INFO, f'{self.name}: is starting')
+        log.log(log.DEBUG, f'{self.name}: is starting')
         num_instructions = 0
         while True:
             instruction = self.memory[self.instruction_pointer]
@@ -329,7 +329,7 @@ class Program(threading.Thread):
                 self.instruction_pointer = next_instruction_pointer
             else:
                 self.instruction_pointer += 1 + num_params
-        log.log(log.INFO, f'{self.name}: is done, ran {num_instructions} instructions')
+        log.log(log.DEBUG, f'{self.name}: is done, ran {num_instructions} instructions')
         if self.visualize:
             with (pathlib.Path(__file__).parent.resolve() / 'visualizer' / 'dumps' / f'{self.name}.json').open('w') as f:
                 json.dump(self.output_json, f, separators=(',', ':'))
