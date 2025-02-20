@@ -33,7 +33,7 @@ class InputParser:
 
     def get_input(self) -> list[str]:
         """Get the input lines."""
-        return [line.strip() for line in self.input]
+        return [line.rstrip('\r\n') for line in self.input]
 
     def get_two_part_input(self) -> tuple[list[str], list[str]]:
         """Get input that is two parts, separated by a blank line."""

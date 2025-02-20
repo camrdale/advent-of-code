@@ -156,6 +156,15 @@ class UnknownMap:
             if coordinate in coords:
                 return feature
         return ''
+    
+    def neighbors(self, location: Coordinate) -> list['Coordinate']:
+        return [neighbor for neighbor in location.neighbors() if self.valid(neighbor)]
+
+    def next_paths(self, path: Path, coords_to_avoid: set[Coordinate]) -> list['Path']:
+        new_previous = path.previous.union((path.location,))
+        return [Path(path.length + 1, neighbor, new_previous)
+                for neighbor in self.neighbors(path.location)
+                if neighbor not in path.previous and neighbor not in coords_to_avoid]
 
     def shortest_paths(
             self, 
@@ -189,9 +198,8 @@ class UnknownMap:
                 shortest_path = path
                 continue
 
-            for next_path in path.next_paths():
-                if self.valid(next_path.location) and next_path.location not in coords_to_avoid:
-                    paths_to_try.put(next_path)
+            for next_path in self.next_paths(path, coords_to_avoid):
+                paths_to_try.put(next_path)
 
         return visited, shortest_path
 
