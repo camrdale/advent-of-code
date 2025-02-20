@@ -3,8 +3,7 @@ from queue import PriorityQueue
 import string
 from typing import NamedTuple
 
-from aoc import log
-from aoc.map import ParsedMap, Coordinate
+from aoc.map import ParsedMap, Coordinate, Path
 
 PORTAL_NAMES = string.ascii_letters + string.digits
 
@@ -71,16 +70,59 @@ class PlutoMap(ParsedMap):
             for location in self.features[portal]:
                 self.portal_locations[location] = portal
                 self.portals[portal].append(location)
+
+    def travel_through_portal(self, portal_location: Coordinate) -> Coordinate:
+        portal = self.portal_locations[portal_location]
+        portal_destinations = self.portals[portal]
+        if len(portal_destinations) == 2:
+            return [
+                destination for destination in portal_destinations
+                if destination != portal_location][0]
+        raise ValueError(f'Cant travel through portal: {portal_location}')
     
-    def neighbors(self, location: Coordinate) -> list['Coordinate']:
-        neighbors = super().neighbors(location)
-        if location in self.portal_locations:
-            portal = self.portal_locations[location]
-            portal_destinations = self.portals[portal]
-            if len(portal_destinations) == 2:
-                neighbor = [destination for destination in portal_destinations if destination != location][0]
-                neighbors.append(neighbor)
-        return neighbors
+    def precalculate_portal_paths(self) -> dict[Coordinate, dict[Coordinate, int]]:
+        portal_paths: dict[Coordinate, dict[Coordinate, int]] = {}
+        for location in self.portal_locations:
+            visited = self.shortest_paths(location, Coordinate(-1,-1), '# ')[0]
+            portal_paths[location] = dict(
+                (next_location, distance)
+                for next_location, distance in visited.items()
+                if next_location in self.portal_locations and next_location != location
+            )
+        return portal_paths
+
+    def shortest_path(
+            self, 
+            starting_pos: Coordinate, 
+            ending_pos: Coordinate
+            ) -> Path:
+        portal_paths = self.precalculate_portal_paths()
+        visited: dict[Coordinate, int] = {}
+        paths_to_try: PriorityQueue[Path] = PriorityQueue()
+        paths_to_try.put(Path(0, starting_pos, frozenset()))
+
+        while not paths_to_try.empty():
+            path = paths_to_try.get()
+            if path.location in visited:
+                continue
+            visited[path.location] = path.length
+            if path.location == ending_pos:
+                return path
+
+            for next_location, distance in portal_paths[path.location].items():
+                if next_location == ending_pos:
+                    paths_to_try.put(Path(
+                        path.length + distance,
+                        next_location,
+                        path.previous.union(frozenset([path.location]))))
+                
+                if len(self.portals[self.portal_locations[next_location]]) == 2:
+                    paths_to_try.put(Path(
+                        path.length + distance + 1,
+                        self.travel_through_portal(next_location),
+                        path.previous.union(frozenset([path.location]))))
+
+        raise ValueError(f'Failed to find a path from {starting_pos} to {ending_pos}')
 
     def outer_portal(self, location: Coordinate) -> bool:
         return (
@@ -122,33 +164,33 @@ class PlutoMap(ParsedMap):
             starting_pos: LevelLocation, 
             ending_pos: LevelLocation
             ) -> LevelPath:
+        portal_paths = self.precalculate_portal_paths()
         visited: dict[LevelLocation, int] = {}
         paths_to_try: PriorityQueue[LevelPath] = PriorityQueue()
         paths_to_try.put(LevelPath(0, starting_pos, frozenset()))
-        coords_to_avoid: set[Coordinate] = set().union(self.features['#'], self.features[' '])
-        outer_portals = {
-            location for location, portal in self.portal_locations.items()
-            if portal != 'A' and portal != 'Z' and self.outer_portal(location)}
-        outermost_coords_to_avoid = coords_to_avoid.union(outer_portals)
-        start_and_end_portals = {
-            location for location, portal in self.portal_locations.items()
-            if portal == 'A' or portal == 'Z'}
-        inner_coords_to_avoid = coords_to_avoid.union(start_and_end_portals)
-        longest_length = 0
 
         while not paths_to_try.empty():
             path = paths_to_try.get()
             if path.location in visited:
                 continue
             visited[path.location] = path.length
-            if path.length > longest_length:
-                log.log(log.DEBUG, f'{path.length} steps to reach {path.location}')
-                longest_length = path.length
-
             if path.location == ending_pos:
                 return path
 
-            for next_path in self.next_level_paths(path, outermost_coords_to_avoid, inner_coords_to_avoid):
-                paths_to_try.put(next_path)
-
+            for next_location, distance in portal_paths[path.location.location].items():
+                if next_location == ending_pos.location and path.location.level == ending_pos.level:
+                    paths_to_try.put(LevelPath(
+                        path.length + distance,
+                        ending_pos,
+                        path.previous.union(frozenset([path.location]))))
+                if path.location.level == 0 and self.outer_portal(next_location):
+                    continue
+                if len(self.portals[self.portal_locations[next_location]]) == 2:
+                    paths_to_try.put(LevelPath(
+                        path.length + distance + 1,
+                        LevelLocation(
+                            self.travel_through_portal(next_location),
+                            path.location.level + (-1 if self.outer_portal(next_location) else 1)),
+                        path.previous.union(frozenset([path.location]))))
+                    
         raise ValueError(f'Failed to find a path from {starting_pos} to {ending_pos}')

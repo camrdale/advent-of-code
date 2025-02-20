@@ -12,7 +12,7 @@ class Part1(Part):
         map = PlutoMap(input)
         log.log(log.INFO, map.print_map())
 
-        _, shortest_path = map.shortest_paths(map.portals['A'][0], map.portals['Z'][0], '# ')
+        shortest_path = map.shortest_path(map.portals['A'][0], map.portals['Z'][0])
         if shortest_path is None:
             raise ValueError(f'Failed to find the shortest path')
 
