@@ -26,7 +26,7 @@ class Memory:
         if new_len <= len(self.memory):
             return
         self.memory.extend([0]*(new_len - len(self.memory)))
-        log.log(log.DEBUG, f'Memory padded to new length: {new_len}')
+        log.log(log.INTCODE, f'Memory padded to new length: {new_len}')
 
     @overload
     def __getitem__(self, index: int) -> int:
@@ -57,7 +57,7 @@ class Operation(ABC):
     parameter_types: tuple[ParameterType, ...] = ()
     short_name = 'NIL'
 
-    def __init__(self, program_name: str, parameter_modes: list[int], input: queue.Queue[int], output: queue.Queue[int], memory: Memory, blocked: threading.Event):
+    def __init__(self, program_name: str, parameter_modes: list[int], input: queue.Queue[int], output: queue.Queue[int], memory: Memory, blocked: threading.Event, running: threading.Event):
         if len(parameter_modes) > len(self.parameter_types):
             raise ValueError(f'{program_name}: Operation {self} expected no more than {len(self.parameter_types)} parameter modes, got {parameter_modes}')
         self.program_name = program_name
@@ -66,6 +66,7 @@ class Operation(ABC):
         self.output = output
         self.memory = memory
         self.blocked = blocked
+        self.running = running
         self.raw_parameters: list[str] = []
         self.parsed_parameters: list[str] = []
         self.result: str = ''
@@ -156,9 +157,11 @@ class Input(Operation):
         output_location, = self.get_parameters(parameters)
         if self.input.empty():
             log.log(log.DEBUG, f'  {self.program_name}: Waiting on input')
+            self.running.clear()
             self.blocked.set()
         input_value = self.input.get()
         self.blocked.clear()
+        self.running.set()
         self.write(output_location, input_value)
 
 
@@ -289,10 +292,13 @@ class Program(threading.Thread):
             }
             self.output_json['operations'] = []
         self.blocked = threading.Event()
+        self.running = threading.Event()
+        self.done = False
         self.start()
 
     def run(self) -> None:
         log.log(log.DEBUG, f'{self.name}: is starting')
+        self.running.set()
         num_instructions = 0
         while True:
             instruction = self.memory[self.instruction_pointer]
@@ -300,11 +306,11 @@ class Program(threading.Thread):
             opcode, parameter_modes = self.parse_instruction(instruction)
             if opcode == 99:
                 break
-            operation = self.OPERATIONS[opcode](self.name, parameter_modes, self.input, self.output, self.memory, self.blocked)
+            operation = self.OPERATIONS[opcode](self.name, parameter_modes, self.input, self.output, self.memory, self.blocked, self.running)
             num_params = len(operation.parameter_types)
             parameters = self.memory[(self.instruction_pointer+1):(self.instruction_pointer+1+num_params)]
             next_instruction_pointer = operation.apply(*parameters)
-            log.log(log.DEBUG, f'  {self.name} {instruction:5d}: {operation}')
+            log.log(log.INTCODE, f'  {self.name} {instruction:5d}: {operation}')
             if self.visualize:
                 input_parameter_locations = operation.reads_from
                 for i, input_parameter_location in enumerate(input_parameter_locations):
@@ -333,3 +339,55 @@ class Program(threading.Thread):
         if self.visualize:
             with (pathlib.Path(__file__).parent.resolve() / 'visualizer' / 'dumps' / f'{self.name}.json').open('w') as f:
                 json.dump(self.output_json, f, separators=(',', ':'))
+        self.done = True
+        self.blocked.set()
+
+
+class SynchronousProgram:
+    def __init__(self, name: str, memory: list[int], instruction_pointer: int = 0, relative_base: int = 0, visualize: bool = False):
+        self.program = Program(name, memory, instruction_pointer=instruction_pointer, relative_base=relative_base, visualize=visualize)
+        self.output: list[int] = []
+        self.start_of_latest_output = 0
+        self.program_input: queue.Queue[int] = queue.Queue()
+        self.program_output: queue.Queue[int] = queue.Queue()
+        self.program.execute(self.program_input, self.program_output)
+        self._read_output()
+
+    def _read_output(self) -> None:
+        self.program.blocked.wait()
+        while not self.program_output.empty():
+            self.output.append(self.program_output.get_nowait())
+
+    def write(self, input: list[int]) -> None:
+        if self.program.done:
+            raise ValueError(f'Program already terminated, cant write: {input}')
+        self.start_of_latest_output = len(self.output)
+        running_waiter = threading.Thread(target=self.program.running.wait, daemon=True)
+        running_waiter.start()
+        for i in input:
+            self.program_input.put(i)
+        running_waiter.join()
+        self._read_output()
+
+    def write_ascii(self, ascii_input: str) -> None:
+        if self.program.done:
+            raise ValueError(f'Program already terminated, cant write: {ascii_input}')
+        if ascii_input[-1] != '\n':
+            ascii_input += '\n'
+        log.log(log.INFO, ascii_input)
+        self.write([ord(c) for c in ascii_input])
+
+    def is_done(self) -> bool:
+        return self.program.done
+    
+    def get_latest_output(self) -> list[int]:
+        return self.output[self.start_of_latest_output:]
+    
+    def get_latest_output_ascii(self) -> str:
+        ascii_output = ''
+        for output in self.get_latest_output():
+            if output > 127:
+                log.log(log.DEBUG, f'Ignoring non-ascii character: {output}')
+                continue
+            ascii_output += chr(output)
+        return ascii_output

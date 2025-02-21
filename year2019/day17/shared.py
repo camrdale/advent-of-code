@@ -1,4 +1,3 @@
-import queue
 from typing import NamedTuple
 
 from aoc import log
@@ -88,19 +87,8 @@ class ScaffoldMap(aoc.map.ParsedMap):
 class AsciiProgram:
     def __init__(self, intcode_input: list[int]):
         self.intcode_input = list(intcode_input)
-        ascii = intcode.Program('ASCII', intcode_input)
-        ascii_input: queue.Queue[int] = queue.Queue()
-        ascii_output: queue.Queue[int] = queue.Queue()
-        ascii.execute(ascii_input, ascii_output)
-        ascii.join()
-        map_input: list[str] = ['']
-        while not ascii_output.empty():
-            code = ascii_output.get_nowait()
-            if code == 10:
-                map_input.append('')
-            else:
-                map_input[-1] += chr(code)
-        self.map = ScaffoldMap(map_input)
+        ascii = intcode.SynchronousProgram('ASCII', intcode_input)
+        self.map = ScaffoldMap(ascii.get_latest_output_ascii().split('\n'))
 
     def turn(self, current_direction: aoc.map.Direction, new_direction: aoc.map.Direction) -> str:
         if current_direction == new_direction:
@@ -169,45 +157,38 @@ class AsciiProgram:
         intcode_input = list(self.intcode_input)
         intcode_input[0] = 2
 
-        ascii = intcode.Program('ASCII', intcode_input)
-        ascii_input: queue.Queue[int] = queue.Queue()
-        ascii_output: queue.Queue[int] = queue.Queue()
-        ascii.execute(ascii_input, ascii_output)
-        for char in ','.join(main):
-            ascii_input.put(ord(char))
-        ascii_input.put(10)
-        for char in ','.join(a):
-            ascii_input.put(ord(char))
-        ascii_input.put(10)
-        for char in ','.join(b):
-            ascii_input.put(ord(char))
-        ascii_input.put(10)
-        for char in ','.join(c):
-            ascii_input.put(ord(char))
-        ascii_input.put(10)
-        ascii_input.put(ord('n'))
-        ascii_input.put(10)
-        ascii.join()
+        ascii = intcode.SynchronousProgram('ASCII', intcode_input)
+        log.log(log.DEBUG, f'ASCII initial output:')
+        log.log(log.INFO, ascii.get_latest_output_ascii())
+        log.log(log.DEBUG, f'ASCII end of initial output')
+        ascii.write_ascii(','.join(main))
+        log.log(log.DEBUG, f'ASCII main output:')
+        log.log(log.INFO, ascii.get_latest_output_ascii())
+        log.log(log.DEBUG, f'ASCII end of main output')
+        ascii.write_ascii(','.join(a))
+        log.log(log.DEBUG, f'ASCII A output:')
+        log.log(log.INFO, ascii.get_latest_output_ascii())
+        log.log(log.DEBUG, f'ASCII end of A output')
+        ascii.write_ascii(','.join(b))
+        log.log(log.DEBUG, f'ASCII B output:')
+        log.log(log.INFO, ascii.get_latest_output_ascii())
+        log.log(log.DEBUG, f'ASCII end of B output')
+        ascii.write_ascii(','.join(c))
+        log.log(log.DEBUG, f'ASCII C output:')
+        log.log(log.INFO, ascii.get_latest_output_ascii())
+        log.log(log.DEBUG, f'ASCII end of C output')
+        ascii.write_ascii('n')
 
-        result = -1
-        line = ''
-        log.log(log.INFO, f'ASCII output:')
-        while not ascii_output.empty():
-            output = ascii_output.get_nowait()
-            if output > 127:
-                result = output
-            else:
-                if output == 10:
-                    log.log(log.INFO, line)
-                    line = ''
-                else:
-                    line += chr(output)
-        return result
+        log.log(log.DEBUG, f'ASCII final output:')
+        log.log(log.INFO, ascii.get_latest_output_ascii())
+        log.log(log.DEBUG, f'ASCII end of final output')
+
+        return ascii.get_latest_output()[-1]
 
     def find_and_run_path(self) -> int:
         movements = self.map.follow_path()
         ascii_movements = self.convert_to_ascii(movements)
-        log.log(log.INFO, f'{",".join(map(str, ascii_movements))}')
+        log.log(log.DEBUG, f'{",".join(map(str, ascii_movements))}')
         routines = self.create_routines(ascii_movements)
         if routines is None:
             raise ValueError(f'Failed to find a routine for path')
@@ -220,11 +201,6 @@ class AsciiProgram:
                 routine_path.extend(b)
             if routine == 'C':
                 routine_path.extend(c)
-        log.log(log.INFO, f'{",".join(routine_path)}')
-        
-        log.log(log.INFO, f'main: {main}')
-        log.log(log.INFO, f'A: {a}')
-        log.log(log.INFO, f'B: {b}')
-        log.log(log.INFO, f'C: {c}')
+        log.log(log.DEBUG, f'{",".join(routine_path)}')
         
         return self.run_path(main, a, b, c)

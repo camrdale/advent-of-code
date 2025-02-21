@@ -8,8 +8,10 @@ RESULT = 0
 INFO = 1
 # Debugging information, more verbose
 DEBUG = 2
+# Debugging information for INTCODE operations
+INTCODE = 3
 # The most verbose
-VERBOSE = 3
+VERBOSE = 4
 
 # Default log level is to only print the result line.
 log_level = RESULT
