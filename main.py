@@ -8,7 +8,7 @@ import re
 import sys
 import time
 
-from aoc.log import set_log_level, RESULT, INFO
+from aoc import log
 from aoc.runner import Part
 
 YEAR_DIR = re.compile(r'^year([0-9]*)$')
@@ -34,7 +34,7 @@ def find_parts(day_dir: Path) -> list[int]:
 
 def run_day(year: int, day: int, latest_only: bool=False):
     """Run all parts (by default) for a specific day."""
-    set_log_level(RESULT)  # only log the final result for each input
+    log.set_log_level(log.RESULT)  # only log the final result for each input
     day_dir = Path(sys.argv[0]).parent.resolve() / f'year{year}' / f'day{day}'
     if not day_dir.is_dir():
         print(f'ERROR Failed to find directory for: day{day}')
@@ -63,7 +63,7 @@ def run_today(year: int|None = None):
 
 def run_all(only_year: int|None = None):
     """Run both parts for every day so far."""
-    set_log_level(-1)  # don't log anything while running each part
+    log.set_log_level(-1)  # don't log anything while running each part
     parts: list[tuple[int, int, int]] = []
     for year_dir in Path(sys.argv[0]).parent.resolve().glob('year*'):
         if not year_dir.is_dir():
@@ -103,5 +103,5 @@ if __name__ == '__main__':
     run_today(year=2019)
     # run_day(2019, 2)
     # run_all(only_year=2019)
-    set_log_level(INFO)
+    log.set_log_level(log.INFO)
     # run_part(2019, 2, 2)
