@@ -31,6 +31,7 @@ class Part2(Part):
         if springdroid.is_done():
             raise ValueError(f'SPRINGDROID exited early.')
 
+        log.log(log.INFO, PROGRAM)
         springdroid.write_ascii(PROGRAM)
 
         log.log(log.DEBUG, f'SPRINGDROID final output:')

@@ -374,7 +374,6 @@ class SynchronousProgram:
             raise ValueError(f'Program already terminated, cant write: {ascii_input}')
         if ascii_input[-1] != '\n':
             ascii_input += '\n'
-        log.log(log.INFO, ascii_input)
         self.write([ord(c) for c in ascii_input])
 
     def is_done(self) -> bool:
