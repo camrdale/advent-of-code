@@ -65,13 +65,13 @@ class Robot:
 
 class RobotMap:
 
-    def __init__(self, input: list[tuple[str, ...]], width: int, height: int):
+    def __init__(self, input: list[tuple[int, ...]], width: int, height: int):
         self.width= width
         self.height = height
         self.robots: list[Robot] = [
             Robot(
-                Position(int(robot[0]), int(robot[1])),
-                Velocity(int(robot[2]), int(robot[3])),
+                Position(robot[0], robot[1]),
+                Velocity(robot[2], robot[3]),
                 width, height)
             for robot in input]
     

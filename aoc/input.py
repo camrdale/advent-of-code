@@ -63,6 +63,13 @@ class InputParser:
             results.append(match.groups())
         return results
 
+    def get_parsed_int_input(self, regex: re.Pattern[str]) -> list[tuple[int, ...]]:
+        """Get the input lines parsed by a regex, and converted to integers."""
+        results: list[tuple[int, ...]] = []
+        for groups in self.get_parsed_input(regex):
+            results.append(tuple(map(int, groups)))
+        return results
+
     def get_multipart_input(self) -> list[list[str]]:
         """Get the input that is multiple parts, each part separated by a blank line."""
         results: list[list[str]] = [[]]

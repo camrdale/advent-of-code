@@ -3,27 +3,11 @@ from typing import NamedTuple
 
 from aoc.input import InputParser
 from aoc.log import log, RESULT
+from aoc.range import Range
 import aoc.runner
 
 PART_PARSER = re.compile(r'{x=([0-9]*),m=([0-9]*),a=([0-9]*),s=([0-9]*)}')
 RULE_PARSER = re.compile(r'([xmas])([<>])([0-9]*):(.*)')
-
-
-class Range(NamedTuple):
-    start: int
-    end: int
-
-    def length(self) -> int:
-        return self.end - self.start + 1
-    
-    def split(self, value: int) -> 'tuple[Range|None, Range|None]':
-        lower_range = None
-        upper_range = None
-        if value > self.start:
-            lower_range = Range(self.start, min(value - 1, self.end))
-        if value <= self.end:
-            upper_range = Range(max(self.start, value), self.end)
-        return lower_range, upper_range
 
 
 class XmasRange(NamedTuple):
@@ -84,8 +68,7 @@ class Workflow:
             if range_false is None:
                 break
             ranges = range_false
-        if ranges is not None:
-            results.append((ranges, self.final_result))
+        results.append((ranges, self.final_result))
         return results
 
 
@@ -108,7 +91,9 @@ class Part2(aoc.runner.Part):
             assert final_result != ''
             workflows[name] = Workflow(rules, final_result)
 
-        to_process = [(XmasRange(Range(1, 4000), Range(1, 4000), Range(1, 4000), Range(1, 4000)), 'in')]
+        to_process = [(XmasRange(
+            Range.closed(1, 4000), Range.closed(1, 4000),
+            Range.closed(1, 4000), Range.closed(1, 4000)), 'in')]
 
         accepted_rating_numbers = 0
         while len(to_process) > 0:

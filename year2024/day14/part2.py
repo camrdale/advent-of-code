@@ -7,7 +7,7 @@ from .shared import RobotMap, ROBOT
 
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
-        input = parser.get_parsed_input(ROBOT)
+        input = parser.get_parsed_int_input(ROBOT)
         width: int
         height: int
         width, height = parser.get_additional_params()

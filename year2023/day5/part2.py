@@ -2,23 +2,8 @@ from typing import NamedTuple
 
 from aoc.input import InputParser
 from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.range import Range
 from aoc.runner import Part
-
-
-class Range(NamedTuple):
-    start: int
-    end: int
-
-    def length(self) -> int:
-        return self.end - self.start
-
-    def intersects(self, other: 'Range') -> bool:
-        if self.start >= other.end or other.start >= self.end:
-            return False
-        return True
-    
-    def delta(self, delta: int) -> 'Range':
-        return Range(self.start + delta, self.end + delta)
 
 
 class Conversion(NamedTuple):
@@ -35,16 +20,16 @@ class Conversion(NamedTuple):
                 unaffected_ranges.append(range)
                 continue
             if self.conversion_range.start > range.start:
-                unaffected_ranges.append(Range(range.start, self.conversion_range.start))
+                unaffected_ranges.append(Range.open(range.start, self.conversion_range.start))
                 log(DEBUG, f'    Split start from {range}: {unaffected_ranges[-1]}')
             if self.conversion_range.end < range.end:
-                unaffected_ranges.append(Range(self.conversion_range.end, range.end))
+                unaffected_ranges.append(Range.open(self.conversion_range.end, range.end))
                 log(DEBUG, f'    Split end from {range}: {unaffected_ranges[-1]}')
-            affected_range = Range(
+            affected_range = Range.open(
                 max(range.start, self.conversion_range.start),
                 min(range.end, self.conversion_range.end))
             log(DEBUG, f'    {range} needs to be modified in: {affected_range}')
-            delta_range = affected_range.delta(self.delta)
+            delta_range = affected_range.offset(self.delta)
             log(DEBUG, f'    {range} results in new range: {delta_range}')
             affected_ranges.append(delta_range)
         return unaffected_ranges, affected_ranges
@@ -58,7 +43,7 @@ class Part2(Part):
         seed_nums = list(map(int, input[0].split(':')[1].split()))
         for i in range(0, len(seed_nums), 2):
             start, range_length = seed_nums[i], seed_nums[i+1]
-            ranges.append(Range(start, start + range_length))
+            ranges.append(Range.open(start, start + range_length))
 
         i = 3
         while i < len(input):
@@ -66,7 +51,7 @@ class Part2(Part):
             new_ranges: list[Range] = []
             while i < len(input) and input[i] != '':
                 destination_start, source_start, range_length = map(int, input[i].split())
-                conversion = Conversion(Range(source_start, source_start + range_length), destination_start - source_start)
+                conversion = Conversion(Range.open(source_start, source_start + range_length), destination_start - source_start)
                 ranges, affected_ranges = conversion.apply(ranges)
                 new_ranges.extend(affected_ranges)
                 i += 1

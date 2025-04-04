@@ -4,7 +4,6 @@ import re
 
 import aoc.input
 from aoc import log
-import aoc.map
 from aoc import runner
 
 COORDS = re.compile(r'<x=([0-9-]*), y=([0-9-]*), z=([0-9-]*)>')
@@ -20,11 +19,10 @@ def cmp(a: int, b: int) -> int:
 
 class Part2(runner.Part):
     def run(self, parser: aoc.input.InputParser) -> int:
-        input = parser.get_parsed_input(COORDS)
+        input = parser.get_parsed_int_input(COORDS)
 
         moon_positions: list[list[int]] = []
-        for line in input:
-            x, y, z = map(int, line)
+        for x, y, z in input:
             moon_positions.append([x,y,z])
 
         moon_velocities = [[0,0,0] for _ in range(len(moon_positions))]
