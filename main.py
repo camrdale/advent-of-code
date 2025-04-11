@@ -34,7 +34,7 @@ def find_parts(day_dir: Path) -> list[int]:
 
 def run_day(year: int, day: int, latest_only: bool=False):
     """Run all parts (by default) for a specific day."""
-    log.set_log_level(log.INFO)  # only log the final result for each input
+    log.set_log_level(log.RESULT)  # only log the final result for each input
     day_dir = Path(sys.argv[0]).parent.resolve() / f'year{year}' / f'day{day}'
     if not day_dir.is_dir():
         print(f'ERROR Failed to find directory for: day{day}')
