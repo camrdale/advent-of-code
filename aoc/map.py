@@ -170,7 +170,7 @@ class UnknownMap:
             self, 
             starting_pos: Coordinate, 
             ending_pos: Coordinate, 
-            features_to_avoid: str
+            features_to_avoid: str = ''
             ) -> tuple[dict[Coordinate, int], Path | None]:
         """Find the shortest paths from starting_pos, avoiding the features.
         
