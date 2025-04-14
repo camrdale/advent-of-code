@@ -19,6 +19,12 @@ class Offset(NamedTuple):
     def manhattan_distance(self) -> int:
         return abs(self.x) + abs(self.y)
 
+    def to_direction(self) -> 'Offset':
+        """Convert the offset into one with unit values."""
+        return Offset(
+            0 if self.x == 0 else self.x // abs(self.x),
+            0 if self.y == 0 else self.y // abs(self.y))
+
 
 UP = Offset(0, -1)
 DOWN = Offset(0, 1)
@@ -78,6 +84,10 @@ class Coordinate(NamedTuple):
 
     def diagonal_neighbors(self) -> list['Coordinate']:
         return [self.add(offset) for offset in DIAGONAL_NEIGHBORS]
+    
+    @classmethod
+    def from_text(cls, text: str) -> Self:
+        return cls(*map(int, text.split(',')))
 
 
 class Offset3D(NamedTuple):

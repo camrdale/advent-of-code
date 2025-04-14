@@ -9,12 +9,6 @@ WITHIN_ONE = set(NEIGHBORS + DIAGONAL_NEIGHBORS + [Offset(0,0)])
 DIRECTIONS = {'U': UP, 'R': RIGHT, 'D': DOWN, 'L': LEFT}
 
 
-def to_direction(offset: Offset) -> Offset:
-    return Offset(
-        0 if offset.x == 0 else offset.x // abs(offset.x),
-        0 if offset.y == 0 else offset.y // abs(offset.y))
-
-
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
@@ -29,7 +23,7 @@ class Part1(Part):
                 head = head.add(direction)
                 to_head = head.difference(tail)
                 if to_head not in WITHIN_ONE:
-                    tail = tail.add(to_direction(to_head))
+                    tail = tail.add(to_head.to_direction())
                     visited.add(tail)
 
         log.log(log.RESULT, f'The number of positions visited by the tail: {len(visited)}')

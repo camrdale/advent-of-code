@@ -9,12 +9,6 @@ WITHIN_ONE = set(NEIGHBORS + DIAGONAL_NEIGHBORS + [Offset(0,0)])
 DIRECTIONS = {'U': UP, 'R': RIGHT, 'D': DOWN, 'L': LEFT}
 
 
-def to_direction(offset: Offset) -> Offset:
-    return Offset(
-        0 if offset.x == 0 else offset.x // abs(offset.x),
-        0 if offset.y == 0 else offset.y // abs(offset.y))
-
-
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
@@ -29,7 +23,7 @@ class Part2(Part):
                 for knot in range(1, 10):
                     to_knot_ahead = knots[knot-1].difference(knots[knot])
                     if to_knot_ahead not in WITHIN_ONE:
-                        knots[knot] = knots[knot].add(to_direction(to_knot_ahead))
+                        knots[knot] = knots[knot].add(to_knot_ahead.to_direction())
                         if knot == 9:
                             visited.add(knots[9])
 
