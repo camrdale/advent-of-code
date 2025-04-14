@@ -1,5 +1,5 @@
 from aoc.input import InputParser
-from aoc.log import log, RESULT, INFO, DEBUG, get_log_level
+from aoc.log import log, RESULT, INFO, DEBUG, get_log_level, progress_bar
 from aoc.runner import Part
 
 from .shared import RobotMap, ROBOT
@@ -14,7 +14,7 @@ class Part2(Part):
         robots = RobotMap(input, width, height)
 
         found: list[tuple[tuple[int, int, int, int], int, str]] = []
-        for elapsed in range(10000):
+        for elapsed in progress_bar(range(10000), desc='day 14,2'):
             robots.simulate(1)
             found.append((robots.line_lengths(), elapsed + 1, str(robots)))
         

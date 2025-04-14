@@ -18,7 +18,7 @@ def all_intersect(hailstones: list[shared.Hailstone]) -> bool:
 def find_all_intersect_offset(hailstones: list[shared.Hailstone]) -> aoc.map.Offset:
     tried: set[tuple[int, ...]] = set()
     i = 0
-    for num1 in range(1000):
+    for num1 in log.progress_bar(range(1000), desc='day 24,2'):
         for num2 in range(num1+1):
             for v in itertools.permutations([-num1, -num2, num1, num2], 2):
                     if v not in tried:
@@ -42,7 +42,7 @@ def find_all_intersect_velocity(hailstones: list[shared.Hailstone]) -> aoc.map.O
             relative_hailstones = [hailstone._replace(velocity=aoc.map.Offset3D(hailstone.velocity.z, hailstone.velocity.offset.add(offset))) for hailstone in use_z_for_y]
             if all_intersect(relative_hailstones):
                 return aoc.map.Offset3D(-z*sign, xy_offset)
-    raise ValueError(f'Failed to find all intersect after {1000} iterations')
+    raise ValueError(f'Failed to find all intersect after 1000 iterations')
 
 
 class Part2(runner.Part):

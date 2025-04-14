@@ -5,6 +5,7 @@ import time
 from typing import Any
 
 from aoc.input import InputParser
+from aoc import log
 
 
 class Part(ABC):
@@ -34,7 +35,7 @@ class Part(ABC):
             if final_data and not success:
                 break
 
-            print(f'Running year{year}, day{day}, part{part_num}', 'final data' if final_data else f'test data {i}')
+            log.log(log.RESULT, f'Running year{year}, day{day}, part{part_num}', 'final data' if final_data else f'test data {i}')
 
             if test_data is not None:
                 parser = InputParser.for_string_input(test_data, *self.additional_params[i-1])
@@ -46,9 +47,19 @@ class Part(ABC):
                     base_path / 'input.txt',
                     *self.additional_params[i-1])
 
-            start = time.time()
-            result = self.run(parser)
-            end = time.time()
+            original_log_level: int|None = None
+            if not final_data and log.get_log_level() == log.PROGRESS:
+                original_log_level = log.get_log_level()
+                log.set_log_level(log.NONE)
+
+            try:
+                start = time.time()
+                result = self.run(parser)
+                end = time.time()
+
+            finally:
+                if original_log_level is not None:
+                    log.set_log_level(original_log_level)
 
             if expected_result != result:
                 print(f'FAIL on year{year}, day{day} part{part_num}', 'final data' if final_data else f'test data {i}')
@@ -57,6 +68,8 @@ class Part(ABC):
                 print(f'expected {expected_result}, but got {result}')
                 success = False
 
-        print(f'year{year}, day{day}, part{part_num} last run took {end-start:.3f} seconds')
+        log.log(log.RESULT, f'year{year}, day{day}, part{part_num} last run took {end-start:.3f} seconds')
+        # if end-start >= 5.0:
+        #     print(f'year{year}, day{day}, part{part_num} last run took {end-start:.3f} seconds')
 
         return success

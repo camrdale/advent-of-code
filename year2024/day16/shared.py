@@ -1,6 +1,7 @@
 from typing import NamedTuple
 from queue import PriorityQueue
 
+from aoc import log
 from aoc.map import Coordinate, Direction, ParsedMap
 
 WALL = '#'
@@ -51,7 +52,7 @@ class ReindeerMaze(ParsedMap):
         (self.end_pos,) = self.features[END]
         self.starting_direction = Direction.EAST
 
-    def lowest_score_paths(self) -> list[ReindeerPath]:
+    def lowest_score_paths(self, progress_bar: log.ProgressBar|None = None) -> list[ReindeerPath]:
         visited: dict[Situation, int] = {}
         paths_to_try: PriorityQueue[ReindeerPath] = PriorityQueue()
         found_paths: list[ReindeerPath] = []
@@ -61,6 +62,8 @@ class ReindeerMaze(ParsedMap):
 
         while not paths_to_try.empty():
             path = paths_to_try.get()
+            if progress_bar:
+                progress_bar.update()
             if len(found_paths) > 0 and path.score > found_paths[0].score:
                 return found_paths
             if path.situation.location == self.end_pos:

@@ -5,6 +5,7 @@ from typing import NamedTuple
 
 import cachetools
 
+from aoc import log
 from aoc.map import ParsedMap, Coordinate
 
 MAX_CACHE_SIZE = 2000000
@@ -103,10 +104,14 @@ class VaultMap(ParsedMap):
     def shortest_key_path(
             self, 
             current_locations: tuple[Coordinate, ...], 
-            keys_remaining: frozenset[str]
+            keys_remaining: frozenset[str],
+            progress_bar: log.ProgressBar|None = None
             ) -> int:
         if not keys_remaining:
             return 0
+        
+        if progress_bar:
+            progress_bar.update()
 
         current_keys = frozenset(self.keys.keys()) - keys_remaining
         shortest_path = 10000000000000
@@ -118,7 +123,7 @@ class VaultMap(ParsedMap):
                     continue
                 next_locations = list(current_locations)
                 next_locations[i] = next_location
-                path_length = length + self.shortest_key_path(tuple(next_locations), keys_remaining - frozenset([key]))
+                path_length = length + self.shortest_key_path(tuple(next_locations), keys_remaining - frozenset([key]), progress_bar=progress_bar)
                 if path_length < shortest_path:
                     shortest_path = path_length
 

@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from aoc.input import InputParser
-from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.log import log, RESULT, INFO, DEBUG, progress_bar
 from aoc.map import ParsedMap, Coordinate, Offset
 from aoc.runner import Part
 
@@ -127,7 +127,7 @@ class Part2(Part):
 
         log(DEBUG, map.print_updated_map())
 
-        for direction in move_input:
+        for direction in progress_bar(move_input, desc='day 15,2'):
             map.move(direction)
             log(DEBUG, map.print_updated_map())
 

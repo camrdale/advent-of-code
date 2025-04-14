@@ -60,4 +60,4 @@ part.add_result(140, r"""
 [1,[2,[3,[4,[5,6,0]]]],8,9]
 """)
 
-part.add_result(-1)
+part.add_result(20592)

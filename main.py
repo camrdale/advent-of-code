@@ -63,8 +63,8 @@ def run_today(year: int|None = None):
 
 def run_all(only_year: int|None = None):
     """Run both parts for every day so far."""
-    log.set_log_level(-1)  # don't log anything while running each part
-    parts: list[tuple[int, int, int]] = []
+    log.set_log_level(log.PROGRESS)  # only print progress bars while running each part
+    parts: dict[int, list[tuple[int, int]]] = defaultdict(list)
     for year_dir in Path(sys.argv[0]).parent.resolve().glob('year*'):
         if not year_dir.is_dir():
             continue
@@ -84,19 +84,25 @@ def run_all(only_year: int|None = None):
                 continue
 
             day = int(day_match.group(1))
-            parts.extend((year, day, part) for part in find_parts(day_dir))
+            parts[year].extend((day, part) for part in find_parts(day_dir))
+        parts[year].sort()
 
-    parts.sort()
+    total_parts = 0
     fails = 0
     fail_parts: dict[int, int] = defaultdict(int)
     start = time.time()
-    for year, day, part in parts:
-        if not run_part(year, day, part):
-            fails += 1
-            fail_parts[part] += 1
+    years = sorted(parts)
+    if only_year is None:
+        years = log.progress_bar(years, desc='all years')
+    for year in years:
+        for day, part in log.progress_bar(parts[year], desc=f'year {year}'):
+            total_parts += 1
+            if not run_part(year, day, part):
+                fails += 1
+                fail_parts[part] += 1
 
     end = time.time()
-    print(f'Ran {len(parts)} parts in {end-start:.3f} seconds, failed on {fails} ({fail_parts[1]} on part 1s, {fail_parts[2]} on part 2s)')
+    print(f'Ran {total_parts} parts in {end-start:.3f} seconds, failed on {fails} ({fail_parts[1]} on part 1s, {fail_parts[2]} on part 2s)')
 
 
 if __name__ == '__main__':

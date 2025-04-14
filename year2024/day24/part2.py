@@ -3,7 +3,7 @@ import math
 import random
 
 from aoc.input import InputParser
-from aoc.log import log, RESULT, INFO, DEBUG
+from aoc.log import log, RESULT, INFO, DEBUG, progress_bar
 from aoc.runner import Part
 
 from .shared import Operation, LogicEquation, to_num, calculate_z
@@ -84,7 +84,7 @@ class Part2(Part):
         known_good_equations: set[LogicEquation] = set()
         known_good_equations.update(initial_equations[f'z00'].depends_on_equations(initial_equations))
         known_good_equations.update(initial_equations[f'z01'].depends_on_equations(initial_equations))
-        for z_bit in range(2, 45):
+        for z_bit in progress_bar(range(2, 45), desc='day 24,2'):
             z_equation = initial_equations[f'z{z_bit:02}']
             new_equations = z_equation.depends_on_equations(initial_equations) - known_good_equations
 

@@ -1,5 +1,5 @@
 from aoc.input import InputParser
-from aoc.log import log, RESULT, INFO
+from aoc.log import log, RESULT, INFO, progress_bar
 from aoc.map import Coordinate, UP, RIGHT, DOWN, LEFT
 from aoc.runner import Part
 
@@ -12,7 +12,7 @@ class Part2(Part):
 
         max_energized = 0
         max_energized_locations: set[Coordinate] = set()
-        for y in range(map.min_y, map.max_y + 1):
+        for y in progress_bar(range(map.min_y, map.max_y + 1), desc='day 16,2 1/2'):
             energized_locations = map.energize(Beam(Coordinate(-1,y), RIGHT))
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)
@@ -21,7 +21,7 @@ class Part2(Part):
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)
                 max_energized_locations = energized_locations
-        for x in range(map.min_x, map.max_x + 1):
+        for x in progress_bar(range(map.min_x, map.max_x + 1), desc='day 16,2 2/2'):
             energized_locations = map.energize(Beam(Coordinate(x,-1), DOWN))
             if len(energized_locations) > max_energized:
                 max_energized = len(energized_locations)

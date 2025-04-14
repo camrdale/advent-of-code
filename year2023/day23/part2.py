@@ -93,6 +93,7 @@ class TrailMap(aoc.map.ParsedMap):
 class Part2(runner.Part):
     def run(self, parser: aoc.input.InputParser) -> int:
         input = parser.get_input()
+        estimated_iterations = parser.get_additional_params()[0]
 
         map = TrailMap(input)
 
@@ -104,20 +105,22 @@ class Part2(runner.Part):
 
         stack: list[aoc.map.Path] = [aoc.map.Path(0, aoc.map.Coordinate(map.min_x+1,map.min_y), frozenset())]
         longest_path: aoc.map.Path | None = None
-        while stack:
-            path = stack.pop()
+        with log.ProgressBar(estimated_iterations=estimated_iterations, desc='day 23,2') as progress_bar:
+            while stack:
+                path = stack.pop()
+                progress_bar.update()
 
-            if path.location == aoc.map.Coordinate(map.max_x-1, map.max_y):
-                log.log(log.INFO, f'Found a hike of length {path.length}')
-                if longest_path is None or path.length > longest_path.length:
-                    longest_path = path
-                continue
+                if path.location == aoc.map.Coordinate(map.max_x-1, map.max_y):
+                    log.log(log.INFO, f'Found a hike of length {path.length}')
+                    if longest_path is None or path.length > longest_path.length:
+                        longest_path = path
+                    continue
 
-            branch_point = branch_points[path.location]
-            new_previous = path.previous.union((path.location,))
-            for next_branch_point_location, distance in branch_point.neighbors.items():
-                if next_branch_point_location not in path.previous:
-                    stack.append(aoc.map.Path(path.length + distance, next_branch_point_location, new_previous))
+                branch_point = branch_points[path.location]
+                new_previous = path.previous.union((path.location,))
+                for next_branch_point_location, distance in branch_point.neighbors.items():
+                    if next_branch_point_location not in path.previous:
+                        stack.append(aoc.map.Path(path.length + distance, next_branch_point_location, new_previous))
 
         if longest_path is None:
             raise ValueError(f'Failed to find a path to the end point')
@@ -151,6 +154,6 @@ part.add_result(154, r"""
 #.###.###.#.###.#.#v###
 #.....###...###...#...#
 #####################.#
-""")
+""", 70)
 
-part.add_result(6486)
+part.add_result(6486, None, 30580294)

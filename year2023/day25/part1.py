@@ -190,7 +190,7 @@ class Part1(runner.Part):
                 max_edges = len(component.neighbors)
 
         log.log(log.DEBUG, f'Built a graph with {len(components)} nodes and {num_edges} edges, edges per node are {min_edges}-{max_edges}')
-        dot.render()
+        #dot.render()
 
         for starting_node in components:
             for ending_node in furthest_nodes(starting_node, components):

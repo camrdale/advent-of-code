@@ -8,6 +8,7 @@ from year2019.day18.shared import VaultMap
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
+        estimated_iterations = parser.get_additional_params()[0]
 
         map = VaultMap(input)
         log.log(log.INFO, map.print_map())
@@ -15,7 +16,8 @@ class Part1(Part):
         map.build_visited_sets()
 
         all_keys= frozenset(map.keys.keys())
-        shortest_path = map.shortest_key_path(map.entrances, all_keys)
+        with log.ProgressBar(estimated_iterations=estimated_iterations, desc='day 18,1') as progress_bar:
+            shortest_path = map.shortest_key_path(map.entrances, all_keys, progress_bar=progress_bar)
 
         log.log(log.RESULT, f'Shortest path to collect all keys: {shortest_path}')
         return shortest_path
@@ -27,7 +29,7 @@ part.add_result(8, r"""
 #########
 #b.A.@.a#
 #########
-""")
+""", 2)
 
 part.add_result(86, r"""
 ########################
@@ -35,7 +37,7 @@ part.add_result(86, r"""
 ######################.#
 #d.....................#
 ########################
-""")
+""", 10)
 
 part.add_result(132, r"""
 ########################
@@ -43,7 +45,7 @@ part.add_result(132, r"""
 #.######################
 #.....@.a.B.c.d.A.e.F.g#
 ########################
-""")
+""", 30)
 
 part.add_result(81, r"""
 ########################
@@ -52,7 +54,7 @@ part.add_result(81, r"""
 ###A#B#C################
 ###g#h#i################
 ########################
-""")
+""", 241)
 
 part.add_result(136, r"""
 #################
@@ -64,6 +66,6 @@ part.add_result(136, r"""
 ########.########
 #l.F..d...h..C.m#
 #################
-""")
+""", 34985)
 
-part.add_result(3862)
+part.add_result(3862, None, 102887)

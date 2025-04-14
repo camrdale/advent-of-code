@@ -2,6 +2,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import NamedTuple
 
+from aoc import log
 from aoc.map import Coordinate, Offset, ParsedMap
 
 WALL = '#'
@@ -25,7 +26,7 @@ class Racetrack(ParsedMap):
         time_to_finish, _ = self.shortest_paths(self.end_pos, self.starting_pos, WALL)
         cheats: dict[int, set[Cheat]] = defaultdict(set)
 
-        for start_location, finishing_time in time_to_finish.items():
+        for start_location, finishing_time in log.progress_bar(time_to_finish.items(), desc='day 20'):
             for x_offset in range(-cheats_last, cheats_last + 1):
                 for y_offset in range(-cheats_last + abs(x_offset), cheats_last - abs(x_offset) + 1):
                     offset = Offset(x_offset, y_offset)
