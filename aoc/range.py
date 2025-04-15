@@ -53,6 +53,19 @@ class Range(NamedTuple):
         if value <= self.end:
             upper_range = Range(max(self.start, value), self.end, self.closed_end)
         return lower_range, upper_range
+    
+    def merge(self, other: 'Range') -> 'Range | None':
+        """Merge this Range with the other, returns None if they don't intersect."""
+        if not self.intersects(other):
+            return None
+        start = min(self.start, other.start)
+        end = max(self.end, other.end)
+        closed_end = other.closed_end
+        if end == self.end and end != other.end:
+            closed_end = self.closed_end
+        if other.end == self.end:
+            closed_end = max(self.closed_end, other.closed_end)
+        return Range(start, end, closed_end)
 
     def __repr__(self) -> str:
         return f'[{self.start}-{self.end}{"]" if self.closed_end else ")"}'
