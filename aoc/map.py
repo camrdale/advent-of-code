@@ -106,6 +106,9 @@ class Offset3D(NamedTuple):
         return Offset3D(self.z + offset.z, self.offset.add(offset.offset))
 
 
+NEIGHBORS_3D = [Offset3D(0, offset) for offset in NEIGHBORS] + [Offset3D(1, Offset(0,0)), Offset3D(-1, Offset(0,0))]
+
+
 class Coordinate3D(NamedTuple):
     z: int  # First so sorting by z works.
     location: Coordinate
@@ -118,7 +121,7 @@ class Coordinate3D(NamedTuple):
     def add(self, offset: Offset3D) -> 'Coordinate3D':
         return Coordinate3D(self.z + offset.z, self.location.add(offset.offset))
     
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f'(z={self.z},x={self.location.x},y={self.location.y})'
 
 
