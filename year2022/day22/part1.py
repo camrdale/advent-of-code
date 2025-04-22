@@ -1,0 +1,50 @@
+from aoc.input import InputParser
+from aoc import log
+from aoc.runner import Part
+
+from year2022.day22.shared import MonkeyMap, parse_path
+
+
+class Part1(Part):
+    def run(self, parser: InputParser) -> int:
+        map_input, path_input = parser.get_two_part_input()
+
+        monkey_map = MonkeyMap(map_input)
+
+        monkey_map = MonkeyMap(map_input)
+        monkey_map.calculate_edge_wrapping()
+
+        path = parse_path(path_input[0])
+        for path_element in path:
+            if type(path_element) is int:
+                monkey_map.move(path_element)
+            elif type(path_element) is str:
+                monkey_map.turn(path_element)
+        
+        log.log(log.DEBUG, monkey_map.print_path())
+
+        password = monkey_map.final_password()
+        log.log(log.RESULT, f'The final password is: {password}')
+        return password
+
+
+part = Part1()
+
+part.add_result(6032, r"""
+        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+
+10R5L5R10L4R5L5
+""")
+
+part.add_result(88268)
