@@ -8,13 +8,10 @@ from year2022.day22.shared import MonkeyMap, parse_path
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
         map_input, path_input = parser.get_two_part_input()
-        test = parser.get_additional_params()[0]
 
         monkey_map = MonkeyMap(map_input)
-        if test:
-            monkey_map.calculate_test_cube_wrapping()
-        else:
-            monkey_map.calculate_final_cube_wrapping()
+
+        monkey_map.calculate_cube_wrapping()
 
         path = parse_path(path_input[0])
         for path_element in path:
@@ -47,6 +44,6 @@ part.add_result(5031, r"""
         ......#.
 
 10R5L5R10L4R5L5
-""", True)
+""")
 
-part.add_result(124302, None, False)
+part.add_result(124302)

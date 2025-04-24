@@ -11,7 +11,6 @@ class Part1(Part):
 
         monkey_map = MonkeyMap(map_input)
 
-        monkey_map = MonkeyMap(map_input)
         monkey_map.calculate_edge_wrapping()
 
         path = parse_path(path_input[0])

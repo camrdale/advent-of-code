@@ -16,6 +16,9 @@ class Offset(NamedTuple):
     def add(self, other: 'Offset') -> 'Offset':
         return Offset(self.x + other.x, self.y + other.y)
     
+    def times(self, multiply_by: int) -> 'Offset':
+        return Offset(self.x * multiply_by, self.y * multiply_by)
+    
     def manhattan_distance(self) -> int:
         return abs(self.x) + abs(self.y)
 
