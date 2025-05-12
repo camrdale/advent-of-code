@@ -1,7 +1,7 @@
 from collections import Counter
 from collections import deque
 
-from aoc.log import log, RESULT
+from aoc.log import log, RESULT, INFO
 
 
 def lanternfish(starting_fish: list[int], days: int) -> int:
@@ -24,7 +24,7 @@ def lanternfish(starting_fish: list[int], days: int) -> int:
     for i in range(7, 9):
         new_fish.append(fish_counter[i])
     
-    for _ in range(days):
+    for day in range(days):
         # Remove the counts for fish with timer 0 and 7 from the queues.
         # This has the side-effect of promoting all the other counts 
         multipliers = existing_fish.popleft()
@@ -34,7 +34,7 @@ def lanternfish(starting_fish: list[int], days: int) -> int:
         # Also add them to the back of the queue (timer 6) along with the
         # ones that graduated from the new_fish queue (were timer 7).
         existing_fish.append(graduators + multipliers)
-        # print('After day', day, 'state is:', list(existing_fish) + list(new_fish))
+        log(INFO, f'After day {day}, state is: {list(existing_fish) + list(new_fish)}')
 
     result = sum(existing_fish) + sum(new_fish)
     if len(str(result)) < 100:

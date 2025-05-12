@@ -15,9 +15,8 @@ class Part2(Part):
         autocompletion_scores: list[int] = []
 
         for line in input:
-            chunks = list(line)
             pending_opens: list[str] = []
-            for c in chunks:
+            for c in line:
                 if c in OPENING:
                     pending_opens.append(c)
                     continue

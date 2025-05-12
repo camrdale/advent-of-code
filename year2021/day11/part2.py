@@ -11,7 +11,6 @@ class Part2(Part):
         
         width = len(matrix[0])
         height = len(matrix)
-        num_flashes = [0]    
 
         def neighbors(i: tuple[int, int]):
             return [j for j in ((i[0]-1, i[1]-1), (i[0]-1, i[1]), (i[0]-1, i[1]+1),
@@ -27,10 +26,9 @@ class Part2(Part):
                 for i1 in range(width):
                     to_check = [(i0, i1)]
                     while to_check:
-                        i = to_check.pop(0)
+                        i = to_check.pop()
                         matrix[i[0]][i[1]] += 1
                         if matrix[i[0]][i[1]] == 10:
-                            num_flashes[0] += 1
                             to_check.extend(neighbors(i))
 
             num_reset = 0

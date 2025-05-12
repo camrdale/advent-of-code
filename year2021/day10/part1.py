@@ -15,9 +15,8 @@ class Part1(Part):
         syntax_score = 0
 
         for line in input:
-            chunks = list(line)
             pending_opens: list[str] = []
-            for c in chunks:
+            for c in line:
                 if c in OPENING:
                     pending_opens.append(c)
                     continue
@@ -25,13 +24,6 @@ class Part1(Part):
                     syntax_score += CLOSING_ERROR_SCORES[c]
                     break
                 pending_opens.pop()
-            else:
-                # No break, so no errors found.
-                pending_opens.reverse()
-                score = 0
-                for c in pending_opens:
-                    score *= 5
-                    score += COMPLETION_SCORES[c]
 
         log(RESULT, 'total syntax error score is:', syntax_score)
         return syntax_score

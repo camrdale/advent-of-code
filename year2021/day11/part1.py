@@ -11,7 +11,7 @@ class Part1(Part):
         
         width = len(matrix[0])
         height = len(matrix)
-        num_flashes = [0]    
+        num_flashes = 0
 
         def neighbors(i: tuple[int, int]):
             return [j for j in ((i[0]-1, i[1]-1), (i[0]-1, i[1]), (i[0]-1, i[1]+1),
@@ -25,10 +25,10 @@ class Part1(Part):
                 for i1 in range(width):
                     to_check = [(i0, i1)]
                     while to_check:
-                        i = to_check.pop(0)
+                        i = to_check.pop()
                         matrix[i[0]][i[1]] += 1
                         if matrix[i[0]][i[1]] == 10:
-                            num_flashes[0] += 1
+                            num_flashes += 1
                             to_check.extend(neighbors(i))
 
             for i0 in range(height):
@@ -37,8 +37,8 @@ class Part1(Part):
                     if matrix[i[0]][i[1]] > 9:
                         matrix[i[0]][i[1]] = 0
 
-        log(RESULT, 'number of flashes after 100 steps:', num_flashes[0])
-        return num_flashes[0]
+        log(RESULT, 'number of flashes after 100 steps:', num_flashes)
+        return num_flashes
 
 
 part = Part1()
