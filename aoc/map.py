@@ -1,8 +1,8 @@
 from collections import defaultdict
 import collections.abc
 from enum import IntEnum
+import heapq
 from typing import NamedTuple, Self
-from queue import PriorityQueue
 
 
 class Offset(NamedTuple):
@@ -176,9 +176,13 @@ class UnknownMap:
     def neighbors(self, location: Coordinate) -> list['Coordinate']:
         return [neighbor for neighbor in location.neighbors() if self.valid(neighbor)]
 
+    def cost(self, from_location: Coordinate, to_location: Coordinate) -> int:
+        """The cost of moving from from_location to to_location."""
+        return 1
+
     def next_paths(self, path: Path, coords_to_avoid: set[Coordinate]) -> list['Path']:
         new_previous = path.previous.union((path.location,))
-        return [Path(path.length + 1, neighbor, new_previous)
+        return [Path(path.length + self.cost(path.location, neighbor), neighbor, new_previous)
                 for neighbor in self.neighbors(path.location)
                 if neighbor not in path.previous and neighbor not in coords_to_avoid]
 
@@ -197,14 +201,14 @@ class UnknownMap:
         """
         visited: dict[Coordinate, int] = {}
         shortest_path: Path | None = None
-        paths_to_try: PriorityQueue[Path] = PriorityQueue()
-        paths_to_try.put(Path(0, starting_pos, frozenset()))
+        paths_to_try: list[Path] = []
+        heapq.heappush(paths_to_try, Path(0, starting_pos, frozenset()))
         coords_to_avoid: set[Coordinate] = set().union(*(
             feature_set for feature, feature_set in self.features.items()
             if feature in features_to_avoid))
 
-        while not paths_to_try.empty():
-            path = paths_to_try.get()
+        while paths_to_try:
+            path = heapq.heappop(paths_to_try)
             if path.location in visited:
                 continue
             visited[path.location] = path.length
@@ -215,7 +219,7 @@ class UnknownMap:
                 continue
 
             for next_path in self.next_paths(path, coords_to_avoid):
-                paths_to_try.put(next_path)
+                heapq.heappush(paths_to_try, next_path)
 
         return visited, shortest_path
 
