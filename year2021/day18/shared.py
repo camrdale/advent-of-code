@@ -4,7 +4,7 @@ import re
 from aoc import log
 
 
-class SnailfishNode(ABC):
+class Snailfish(ABC):
     def __init__(self) -> None:
         self.parent: 'SnailfishBranch | None' = None
 
@@ -23,8 +23,37 @@ class SnailfishNode(ABC):
     def set_parent(self, parent: 'SnailfishBranch'):
         self.parent = parent
 
+    @classmethod
+    def parse_text(cls, text: str) -> tuple['Snailfish', int]:
+        if '0' <= text[0] <= '9':
+            value = re.split(r'[,\]]', text)[0]
+            return SnailfishLeaf(int(value)), len(value)
 
-class SnailfishLeaf(SnailfishNode):
+        assert text[0] == '['
+        left, left_length = Snailfish.parse_text(text[1:])
+        length = left_length + 1
+        assert text[length] == ','
+        right, right_length = Snailfish.parse_text(text[length+1:])
+        length += right_length + 1
+        assert text[length] == ']'
+        branch = SnailfishBranch(left, right)
+        return branch, length + 1
+
+    def add(self, other: 'Snailfish') -> 'SnailfishBranch':
+        return SnailfishBranch(self, other).reduce()
+
+    def reduce(self):
+        assert self.parent is None
+        while True:
+            if self.explode():
+                log.log(log.DEBUG, f'Exploded: {self}')
+                continue
+            if not self.split():
+                return self
+            log.log(log.DEBUG, f'Split: {self}')
+
+
+class SnailfishLeaf(Snailfish):
     def __init__(self, magnitude: int) -> None:
         super().__init__()
         self._magnitude = magnitude
@@ -50,18 +79,18 @@ class SnailfishLeaf(SnailfishNode):
         return f'{self._magnitude}'
 
 
-class SnailfishBranch(SnailfishNode):
-    def __init__(self, left: SnailfishNode, right: SnailfishNode) -> None:
+class SnailfishBranch(Snailfish):
+    def __init__(self, left: Snailfish, right: Snailfish) -> None:
         super().__init__()
-        self.left: SnailfishNode = left
-        self.right: SnailfishNode = right
+        self.left: Snailfish = left
+        self.right: Snailfish = right
         self.left.set_parent(self)
         self.right.set_parent(self)
     
     def magnitude(self) -> int:
         return self.left.magnitude() * 3 + self.right.magnitude() * 2
     
-    def replace_child(self, old_child: SnailfishNode, new_child: SnailfishNode):
+    def replace_child(self, old_child: Snailfish, new_child: Snailfish):
         if old_child is self.left:
             self.left = new_child
         elif old_child is self.right:
@@ -130,29 +159,3 @@ class SnailfishBranch(SnailfishNode):
 
     def __repr__(self) -> str:
         return f'[{self.left},{self.right}]'
-
-
-def parse_text(text: str) -> tuple[SnailfishNode, int]:
-    if '0' <= text[0] <= '9':
-        value = re.split(r'[,\]]', text)[0]
-        return SnailfishLeaf(int(value)), len(value)
-
-    assert text[0] == '['
-    left, left_length = parse_text(text[1:])
-    length = left_length + 1
-    assert text[length] == ','
-    right, right_length = parse_text(text[length+1:])
-    length += right_length + 1
-    assert text[length] == ']'
-    branch = SnailfishBranch(left, right)
-    return branch, length + 1
-
-
-def reduce(snailfish: SnailfishNode):
-    while True:
-        if snailfish.explode():
-            log.log(log.DEBUG, f'Exploded: {snailfish}')
-            continue
-        if not snailfish.split():
-            return
-        log.log(log.DEBUG, f'Split: {snailfish}')

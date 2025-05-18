@@ -2,23 +2,22 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2021.day18.shared import SnailfishBranch, parse_text, reduce
+from year2021.day18.shared import Snailfish
 
 
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
 
-        snailfish_sum, length = parse_text(input[0])
+        snailfish_sum, length = Snailfish.parse_text(input[0])
         assert length == len(input[0])
         log.log(log.INFO, f'First number: {snailfish_sum}')
         for line in input[1:]:
-            snailfish_num, length = parse_text(line)
+            snailfish_num, length = Snailfish.parse_text(line)
             assert length == len(line)
             log.log(log.INFO, f'Adding number: {snailfish_num}')
 
-            snailfish_sum = SnailfishBranch(snailfish_sum, snailfish_num)
-            reduce(snailfish_sum)
+            snailfish_sum = snailfish_sum.add(snailfish_num)
             log.log(log.INFO, f'Reduced new number: {snailfish_sum}')
 
         magnitude = snailfish_sum.magnitude()

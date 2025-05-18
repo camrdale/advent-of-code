@@ -4,7 +4,7 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2021.day18.shared import SnailfishBranch, parse_text, reduce
+from year2021.day18.shared import Snailfish
 
 
 class Part2(Part):
@@ -13,14 +13,13 @@ class Part2(Part):
 
         max_magnitude = 0
         for left, right in itertools.permutations(input, 2):
-            snailfish_left, length = parse_text(left)
+            snailfish_left, length = Snailfish.parse_text(left)
             assert length == len(left)
 
-            snailfish_right, length = parse_text(right)
+            snailfish_right, length = Snailfish.parse_text(right)
             assert length == len(right)
 
-            snailfish_sum = SnailfishBranch(snailfish_left, snailfish_right)
-            reduce(snailfish_sum)
+            snailfish_sum = snailfish_left.add(snailfish_right)
 
             magnitude = snailfish_sum.magnitude()
             if magnitude > max_magnitude:
