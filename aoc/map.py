@@ -108,6 +108,9 @@ class Offset3D(NamedTuple):
     def add(self, offset: 'Offset3D') -> 'Offset3D':
         return Offset3D(self.z + offset.z, self.offset.add(offset.offset))
 
+    def manhattan_distance(self) -> int:
+        return abs(self.z) + self.offset.manhattan_distance()
+
 
 NEIGHBORS_3D = [Offset3D(0, offset) for offset in NEIGHBORS] + [Offset3D(1, Offset(0,0)), Offset3D(-1, Offset(0,0))]
 
@@ -120,6 +123,9 @@ class Coordinate3D(NamedTuple):
     def from_text(cls, text: str) -> 'Coordinate3D':
         x,y,z = list(map(int, text.split(',')))
         return cls(z, Coordinate(x,y))
+
+    def difference(self, from_coordinate: 'Coordinate3D') -> Offset3D:
+        return Offset3D(self.z - from_coordinate.z, self.location.difference(from_coordinate.location))
     
     def add(self, offset: Offset3D) -> 'Coordinate3D':
         return Coordinate3D(self.z + offset.z, self.location.add(offset.offset))
