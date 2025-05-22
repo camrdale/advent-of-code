@@ -68,4 +68,4 @@ class Range(NamedTuple):
         return Range(start, end, closed_end)
 
     def __repr__(self) -> str:
-        return f'[{self.start}-{self.end}{"]" if self.closed_end else ")"}'
+        return f'[{self.start},{self.end}{"]" if self.closed_end else ")"}'
