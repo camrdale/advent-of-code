@@ -11,7 +11,7 @@ from aoc import log
 class Part(ABC):
     """One part of a problem for a single day."""
     def __init__(self):
-        self.test_data_and_results: list[tuple[str | None, Any]] = []
+        self.test_data_and_results: list[tuple[str | None, Any, bool|None]] = []
         self.additional_params: list[tuple[Any, ...]] = []
 
     @abstractmethod
@@ -19,9 +19,9 @@ class Part(ABC):
         """Override this to run the input data, returning the result."""
         pass
 
-    def add_result(self, result: Any, test_data: str | None=None, *additional_params: Any):
+    def add_result(self, result: Any, test_data: str | None=None, *additional_params: Any, include_progress: bool|None = None):
         """Add an expected result of running the part, either for test_data input, or for the input file."""
-        self.test_data_and_results.append((test_data, result))
+        self.test_data_and_results.append((test_data, result, include_progress))
         self.additional_params.append(additional_params)
 
     def run_part(self, year: int, day: int, part_num: int, subdirectory: Path | None = None) -> bool:
@@ -29,7 +29,7 @@ class Part(ABC):
         success = True
         i = 0
         end = start = 0.0
-        for test_data, expected_result in self.test_data_and_results:
+        for test_data, expected_result, include_progress in self.test_data_and_results:
             i += 1
             final_data = i == len(self.test_data_and_results)
             if final_data and not success:
@@ -48,7 +48,7 @@ class Part(ABC):
                     *self.additional_params[i-1])
 
             original_log_level: int|None = None
-            if not final_data and log.get_log_level() == log.PROGRESS:
+            if not final_data and log.get_log_level() == log.PROGRESS and not include_progress:
                 original_log_level = log.get_log_level()
                 log.set_log_level(log.NONE)
 
