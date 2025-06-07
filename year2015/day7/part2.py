@@ -1,0 +1,33 @@
+import collections
+
+from aoc.input import InputParser
+from aoc import log
+from aoc.runner import Part
+
+from year2015.day7.shared import Operation
+
+
+class Part2(Part):
+    def run(self, parser: InputParser) -> int:
+        input = parser.get_input()
+
+        operations: dict[str, Operation] = collections.defaultdict(Operation)
+        for line in input:
+            instruction = Operation.parse_text(line)
+            operation = operations[instruction.group(4)]
+            operation.initialize(instruction, operations)
+
+        a_value = operations['a'].value()
+
+        for operation in operations.values():
+            operation.reset()
+        operations['b'].set_value(a_value)
+
+        a_value = operations['a'].value()
+        log.log(log.RESULT, f'The new signal provided to wire "a": {a_value}')
+        return a_value
+
+
+part = Part2()
+
+part.add_result(2797)
