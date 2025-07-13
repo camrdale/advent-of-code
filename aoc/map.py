@@ -222,7 +222,6 @@ class UnknownMap:
             if path.location == ending_pos:
                 # Can only visit the ending location once, so the first time is the shortest path.
                 shortest_path = path
-                continue
 
             for next_path in self.next_paths(path, coords_to_avoid):
                 heapq.heappush(paths_to_try, next_path)
