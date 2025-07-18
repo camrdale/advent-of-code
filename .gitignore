@@ -167,3 +167,6 @@ cython_debug/
 # GraphViz files
 *.gv
 *.pdf
+
+# Profiler output
+*.lprof
