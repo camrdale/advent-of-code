@@ -1,3 +1,6 @@
+import bisect
+from collections.abc import Iterator, Iterable
+import operator
 from typing import NamedTuple, Self
 
 
@@ -16,6 +19,12 @@ class Range(NamedTuple):
     def closed(cls, start: int, end: int) -> Self:
         """Creates a new closed-ended Range."""
         return cls(start, end, True)
+    
+    @classmethod
+    def from_text(cls, text: str, closed: bool = True) -> Self:
+        """Creates a new (closed-ended by default) Range from text of the form '123-456'."""
+        start, end = text.split('-')
+        return cls(int(start), int(end), closed)
 
     def length(self) -> int:
         return self.end - self.start + (1 if self.closed_end else 0)
@@ -69,3 +78,28 @@ class Range(NamedTuple):
 
     def __repr__(self) -> str:
         return f'[{self.start},{self.end}{"]" if self.closed_end else ")"}'
+
+
+class Ranges(Iterable[Range]):
+    """A list of Ranges, maintained such that overlapping Ranges are merged."""
+
+    def __init__(self) -> None:
+        # Sorted list (by start of the range) of non-overlapping Range objects.
+        self.ranges: list[Range] = []
+
+    def add(self, range: Range):
+        """Add a Range to the list, merging it with any Ranges it overlaps with."""
+        i = bisect.bisect_left(self.ranges, range.start, key=operator.attrgetter('start'))
+        if i > 0 and self.ranges[i-1].intersects(range):
+            i -= 1
+        while i < len(self.ranges) and (merged := self.ranges[i].merge(range)) is not None:
+            range = merged
+            del self.ranges[i]
+        self.ranges.insert(i, range)
+
+    def __iter__(self) -> Iterator[Range]:
+        for range in self.ranges:
+            yield range
+
+    def __repr__(self) -> str:
+        return str(self.ranges)
