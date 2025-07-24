@@ -1,11 +1,7 @@
-from pathlib import Path
-
 from aoc.input import InputParser
 from aoc.log import log, RESULT, DEBUG
 from aoc.map import ParsedMap, Coordinate, Offset
 from aoc.runner import Part
-
-from .shared import Visualizer
 
 OBSTRUCTION = '#'
 
@@ -27,10 +23,6 @@ STARTING_DIRECTIONS = {
 
 
 class Part1(Part):
-    def __init__(self, visualize: bool = True):
-        super().__init__()
-        self.visualize = visualize
-
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
 
@@ -49,15 +41,10 @@ class Part1(Part):
             print('ERROR: malformed input')
             return -1
         log(DEBUG, map.min_x, map.min_y, map.max_x, map.max_y)
-        visualizer: Visualizer | None = None
-        if self.visualize:
-            visualizer = Visualizer(map.max_x + 1, map.max_y + 1)
 
         direction = starting_direction
         current_pos = starting_pos
         visited_positions_direction: set[tuple[Coordinate, int]] = set([(starting_pos, starting_direction)])
-        if visualizer is not None:
-            visualizer.draw_board(obstacles, visited_positions_direction, current_pos, direction, 1)
         while True:
             next_pos = current_pos.add(INCREMENTS[direction])
             if not map.valid(next_pos):
@@ -65,25 +52,15 @@ class Part1(Part):
             if next_pos in obstacles:
                 direction = (direction + 1) % 4
                 continue
-            if visualizer is not None:
-                visualizer.animate_movement(obstacles, visited_positions_direction, current_pos, next_pos, direction, 1/60)
             current_pos = next_pos
             visited_positions_direction.add((current_pos, direction))
 
-        if visualizer is not None:
-            visualizer.animate_movement(obstacles, visited_positions_direction, current_pos, next_pos, direction, 1)
-
         num_visited = len(set(coordinate for coordinate, _ in visited_positions_direction))
         log(RESULT, 'Number of visited positions:', num_visited)
-
-        if visualizer is not None:
-            visualizer.finalize()
-            visualizer.outputMovie(Path(__file__).parent.resolve() / 'part1.mp4')
-
         return num_visited
 
 
-part = Part1(visualize=False)
+part = Part1()
 
 part.add_result(41, """
 ....#.....

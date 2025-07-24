@@ -1,5 +1,8 @@
+import concurrent.futures
+import sys
+
 from aoc.input import InputParser
-from aoc.log import log, RESULT, INFO, DEBUG, get_log_level, progress_bar
+from aoc.log import log, RESULT, INFO, DEBUG, get_log_level, ProgressBar
 from aoc.runner import Part
 
 from .shared import RobotMap, ROBOT
@@ -11,13 +14,24 @@ class Part2(Part):
         width: int
         height: int
         width, height = parser.get_additional_params()
-        robots = RobotMap(input, width, height)
 
         found: list[tuple[tuple[int, int, int, int], int, str]] = []
-        for elapsed in progress_bar(range(10000), desc='day 14,2'):
-            robots.simulate(1)
-            found.append((robots.line_lengths(), elapsed + 1, str(robots)))
-        
+
+        def simulate_robots(elapsed: int) -> tuple[tuple[int, int, int, int], int, str]:
+            robots = RobotMap(input, width, height)
+            robots.simulate(elapsed + 1)
+            return (robots.line_lengths(), elapsed + 1, str(robots))
+
+        assert not sys._is_gil_enabled() # type: ignore
+        with ProgressBar(10000, desc='day 14,2') as progress_bar:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                futures: list[concurrent.futures.Future[tuple[tuple[int, int, int, int], int, str]]] = []
+                for elapsed in range(10000):
+                    futures.append(executor.submit(simulate_robots, elapsed))
+                for future in concurrent.futures.as_completed(futures):
+                    progress_bar.update()
+                    found.append(future.result())
+
         if get_log_level() >= INFO:
             for line_lengths, elapsed, robots in sorted(found, reverse=True)[:10]:
                 log(INFO, f'Robots after {elapsed} seconds have longest line lengths {line_lengths}')

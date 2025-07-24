@@ -1,4 +1,6 @@
+import concurrent.futures
 import itertools
+import sys
 
 import aoc.input
 from aoc import log
@@ -16,18 +18,29 @@ def all_intersect(hailstones: list[shared.Hailstone]) -> bool:
 
 
 def find_all_intersect_offset(hailstones: list[shared.Hailstone]) -> aoc.map.Offset:
-    tried: set[tuple[int, ...]] = set()
     i = 0
-    for num1 in log.progress_bar(range(1000), desc='day 24,2'):
-        for num2 in range(num1+1):
-            for v in itertools.permutations([-num1, -num2, num1, num2], 2):
-                    if v not in tried:
-                        tried.add(v)
-                        i += 1
-                        offset = aoc.map.Offset(v[0], v[1])
-                        relative_hailstones = [hailstone._replace(velocity=aoc.map.Offset3D(hailstone.velocity.z, hailstone.velocity.offset.add(offset))) for hailstone in hailstones]
-                        if all_intersect(relative_hailstones):
-                            return offset.negate()
+
+    def check_permutations(num1: int, num2: int) -> None | aoc.map.Offset:
+        for v0 in (num1, -num1) if num1 != 0 else (num1,):
+            for v1 in (num2, -num2) if num2 != 0 else (num2,):
+                offset = aoc.map.Offset(v0, v1)
+                relative_hailstones = [hailstone._replace(velocity=aoc.map.Offset3D(hailstone.velocity.z, hailstone.velocity.offset.add(offset))) for hailstone in hailstones]
+                if all_intersect(relative_hailstones):
+                    return offset.negate()
+
+    assert not sys._is_gil_enabled() # type: ignore
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures: list[concurrent.futures.Future[None | aoc.map.Offset]] = []
+        for num1 in range(500):
+            for num2 in range(num1+1):
+                futures.append(executor.submit(check_permutations, num1, num2))
+        with log.ProgressBar(50000,  desc='day 24,2') as progress_bar:
+            for future in concurrent.futures.as_completed(futures):
+                progress_bar.update()
+                result = future.result()
+                if result is not None:
+                    executor.shutdown(cancel_futures=True)
+                    return result
     raise ValueError(f'Failed to find all intersect after {i} iterations')
 
 
