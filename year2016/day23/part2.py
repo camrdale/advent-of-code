@@ -4,7 +4,7 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2016.day23.shared import Computer, TGL, CPY, JNZ
+from year2016.assembunny import Computer, TGL, CPY, JNZ
 
 
 def shortcut(computer: Computer) -> int:
@@ -31,10 +31,10 @@ class Part2(Part):
         # return shortcut(computer)
 
         # Takes 20 minutes to run without optimizations
-        registers = computer.run(a=12)
+        state = computer.run(a=12)
 
-        log.log(log.RESULT, f'Registers contain: {registers}')
-        return registers['a']
+        log.log(log.RESULT, f'Registers contain: {state.registers}')
+        return state.registers['a']
 
 
 part = Part2()

@@ -2,7 +2,7 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2016.day25.shared import Computer, JNZ
+from year2016.assembunny import Computer, JNZ
 
 
 def is_clock(output: list[int]) -> bool:
@@ -26,13 +26,13 @@ class Part1(Part):
 
         a = 0
         while True:
-            computer.run(a=a)
-            log.log(log.INFO, a, computer.output)
-            if is_clock(computer.output):
+            state = computer.run(a=a)
+            log.log(log.INFO, a, state.output)
+            if is_clock(state.output):
                 break
             a += 1
 
-        log.log(log.RESULT, f'For an "a" value of {a}, output is: {computer.output}')
+        log.log(log.RESULT, f'For an "a" value of {a}, output is: {state.output}')
         return a
 
 

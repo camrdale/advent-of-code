@@ -2,7 +2,7 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2016.day23.shared import Computer
+from year2016.assembunny import Computer
 
 
 class Part1(Part):
@@ -11,10 +11,10 @@ class Part1(Part):
 
         computer = Computer(input)
 
-        registers = computer.run()
+        state = computer.run(a=7)
 
-        log.log(log.RESULT, f'Registers contain: {registers}')
-        return registers['a']
+        log.log(log.RESULT, f'Registers contain: {state.registers}')
+        return state.registers['a']
 
 
 part = Part1()

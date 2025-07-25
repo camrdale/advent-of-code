@@ -4,10 +4,11 @@ from aoc import log
 
 
 class State:
-    def __init__(self, instructions: list['Operation'], a: int = 7) -> None:
+    def __init__(self, instructions: list['Operation'], a: int = 0, c: int = 0) -> None:
         self.instruction = 0
-        self.registers = {'a': a, 'b': 0, 'c': 0, 'd': 0}
+        self.registers = {'a': a, 'b': 0, 'c': c, 'd': 0}
         self.instructions = instructions
+        self.output: list[int] = []
 
 
 class Operation(ABC):
@@ -151,21 +152,37 @@ class ADD(Operation):
 
 
 class MUL(Operation):
-    def __init__(self, register1: str, register2: str, register: str) -> None:
+    def __init__(self, value1: str, value2: str, register: str) -> None:
         super().__init__()
-        self.register1 = register1
-        self.register2 = register2
+        self.value1 = value1
+        self.value2 = value2
         self.register = register
 
     def apply(self, state: State) -> None:
-        state.registers[self.register] += state.registers[self.register1] * state.registers[self.register2]
+        state.registers[self.register] += self.get_value(self.value1, state.registers) * self.get_value(self.value2, state.registers)
         state.instruction += 1
     
     def toggle(self) -> Operation:
         raise ValueError(f'Can not toggle a MUL')
     
     def __repr__(self) -> str:
-        return f'{super().__repr__()}({self.register1}, {self.register2}, {self.register})'
+        return f'{super().__repr__()}({self.value1}, {self.value2}, {self.register})'
+
+
+class OUT(Operation):
+    def __init__(self, register: str) -> None:
+        super().__init__()
+        self.register = register
+
+    def apply(self, state: State) -> None:
+        state.output.append(state.registers[self.register])
+        state.instruction += 1
+
+    def toggle(self) -> Operation:
+        raise ValueError(f'Can not toggle a OUT')
+    
+    def __repr__(self) -> str:
+        return f'{super().__repr__()}({self.register})'
 
 
 class Computer:
@@ -183,15 +200,17 @@ class Computer:
                     self.instructions.append(JNZ(value, register_or_offset))
                 case ('tgl', register):
                     self.instructions.append(TGL(register))
+                case ('out', register):
+                    self.instructions.append(OUT(register))
                 case _:
                     raise ValueError(f'Failed to parse instruction: {instruction_input}')
         self.optimize()
 
-    def run(self, a: int = 7) -> dict[str, int]:
-        state = State(list(self.instructions), a=a)
+    def run(self, a: int = 0, c: int = 0) -> State:
+        state = State(list(self.instructions), a=a, c=c)
         while state.instruction < len(state.instructions):
             state.instructions[state.instruction].apply(state)
-        return state.registers
+        return state
 
     def optimize(self) -> None:
         # Replace INC/DEC/JNZ-2 with ADD - reduces time to run by 37.5%
