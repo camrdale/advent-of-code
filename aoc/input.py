@@ -12,9 +12,9 @@ class InputParser:
     def for_string_input(cls, string_input: str, *args: Any) -> 'InputParser':
         input = string_input.split('\n')
         # Remove empty lines from the start and end of the test data.
-        while input[0] == '':
+        while input[0] == '' and len(input) > 1:
             del input[0]
-        while input[-1] == '':
+        while input[-1] == '' and len(input) > 1:
             del input[-1]
         return InputParser(input, *args)
 
