@@ -37,7 +37,10 @@ def get_log_level() -> int:
 def log(level: int, *args: Any) -> None:
     """Print a log message if the log level allows it."""
     if level <= log_level:
-        print(*args)
+        if len(args) == 1 and callable(args[0]):
+            print(args[0]())
+        else:
+            print(*args)
 
 
 T = TypeVar('T')
