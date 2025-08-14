@@ -1,24 +1,29 @@
+from typing import Hashable
+
+
 class DisjointSetNode:
     """A node in a parent pointer tree structure."""
 
     def __init__(self) -> None:
         self.parent: DisjointSetNode = self
+        # The size is only accurate for nodes that are the root of a tree.
         self.size = 1
 
 
 class DisjointSet:
     """Representation of a disjoint set as a forest of parent pointer trees."""
 
-    def __init__(self, input: list[str]) -> None:
-        self.nodes = [DisjointSetNode() for _ in range(len(input))]
-        for line in input:
-            left, right = line.split(' <-> ')
-            node = int(left)
-            for connected_node in right.split(', '):
-                self.union(node, int(connected_node))
+    def __init__(self) -> None:
+        self.nodes: dict[Hashable, DisjointSetNode] = {}
 
-    def find(self, node_num: int) -> DisjointSetNode:
-        node = self.nodes[node_num]
+    def add(self, node_id: Hashable) -> None:
+        """Add a node identified by node_id to the forest as a new 1-element set."""
+        if node_id not in self.nodes:
+            self.nodes[node_id] = DisjointSetNode()
+
+    def find(self, node_id: Hashable) -> DisjointSetNode:
+        """Find the root of the set that contains the node identified by node_id."""
+        node = self.nodes[node_id]
 
         # Find the root of the tree for this node.
         root = node
@@ -33,10 +38,11 @@ class DisjointSet:
 
         return root
 
-    def union(self, node_a: int, node_b: int) -> None:
+    def union(self, node_a_id: Hashable, node_b_id: Hashable) -> None:
+        """Merge the sets identified by two node ids."""
         # Find the root of the trees for each node.
-        root_node_a = self.find(node_a)
-        root_node_b = self.find(node_b)
+        root_node_a = self.find(node_a_id)
+        root_node_b = self.find(node_b_id)
         if root_node_a == root_node_b:
             # They have the same root so are already unioned.
             return
@@ -47,3 +53,7 @@ class DisjointSet:
 
         root_node_b.parent = root_node_a
         root_node_a.size += root_node_b.size
+
+    def size(self) -> int:
+        """Returns the number of disjoint sets."""
+        return sum(node.parent == node for node in self.nodes.values())

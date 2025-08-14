@@ -1,4 +1,5 @@
-from aoc import log
+import functools
+import operator
 
 
 def tie_knot(lengths: list[int], l: list[int], position: int, skip: int) -> tuple[int, int]:
@@ -18,15 +19,21 @@ def tie_knot(lengths: list[int], l: list[int], position: int, skip: int) -> tupl
 
         position = (position + length + skip) % list_size
         skip += 1
-        log.log(log.DEBUG, l, length, position, end, skip, list_size, knot)
     return position, skip
 
 
-def knot_hash(lengths: list[int], list_size: int = 256, repeat: int = 1) -> list[int]:
-    l = list(range(list_size))
+def knot_hash(input: str) -> list[int]:
+    """Knot hash the given input. The dense hash of 16 bytes is returned."""
+    lengths = [ord(c) for c in input] + [17, 31, 73, 47, 23]
+
+    l = list(range(256))
     position = 0
     skip = 0
-    for i in range(repeat):
+    for _ in range(64):
         position, skip = tie_knot(lengths, l, position, skip)
-        log.log(log.INFO, i, l, position, skip)
-    return l
+
+    dense_hash: list[int] = [
+        functools.reduce(operator.xor, l[i*16:(i+1)*16])
+        for i in range(16)]
+
+    return dense_hash

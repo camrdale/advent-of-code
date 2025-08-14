@@ -1,27 +1,19 @@
-import functools
-import operator
-
 from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2017.day10.shared import knot_hash
+from year2017.knot_hash import knot_hash
 
 
 class Part1(Part):
     def run(self, parser: InputParser) -> str:
         input = parser.get_input()[0]
 
-        lengths = [ord(c) for c in input] + [17, 31, 73, 47, 23]
+        l = knot_hash(input)
 
-        l = knot_hash(lengths, repeat=64)
+        knot_hash_hex = ''.join(format(i, '#04x')[2:] for i in l)
 
-        dense_hash: list[int] = [
-            functools.reduce(operator.xor, l[i*16:(i+1)*16])
-            for i in range(16)]
-        knot_hash_hex = ''.join(format(i, '#04x')[2:] for i in dense_hash)
-
-        log.log(log.RESULT, f'The knot hash is {dense_hash} in hex: {knot_hash_hex}')
+        log.log(log.RESULT, f'The knot hash is {l} in hex: {knot_hash_hex}')
         return knot_hash_hex
 
 

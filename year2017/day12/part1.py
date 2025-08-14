@@ -2,14 +2,21 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2017.day12.shared import DisjointSet
+from aoc.sets import DisjointSet
 
 
 class Part1(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
 
-        disjoint_set = DisjointSet(input)
+        disjoint_set = DisjointSet()
+        for line in input:
+            left, right = line.split(' <-> ')
+            node = int(left)
+            disjoint_set.add(node)
+            for connected_node in map(int, right.split(', ')):
+                disjoint_set.add(connected_node)
+                disjoint_set.union(node, connected_node)
 
         zero_root = disjoint_set.find(0)
 

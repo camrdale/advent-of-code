@@ -1,17 +1,23 @@
 from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
-
-from year2017.day12.shared import DisjointSet
+from aoc.sets import DisjointSet
 
 
 class Part2(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
 
-        disjoint_set = DisjointSet(input)
+        disjoint_set = DisjointSet()
+        for line in input:
+            left, right = line.split(' <-> ')
+            node = int(left)
+            disjoint_set.add(node)
+            for connected_node in map(int, right.split(', ')):
+                disjoint_set.add(connected_node)
+                disjoint_set.union(node, connected_node)
 
-        num_groups = sum(node.parent == node for node in disjoint_set.nodes)
+        num_groups = disjoint_set.size()
 
         log.log(log.RESULT, f'The number of groups of programs: {num_groups}')
         return num_groups
