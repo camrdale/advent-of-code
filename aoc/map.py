@@ -107,6 +107,9 @@ class Offset3D(NamedTuple):
     
     def add(self, offset: 'Offset3D') -> 'Offset3D':
         return Offset3D(self.z + offset.z, self.offset.add(offset.offset))
+    
+    def times(self, multiply_by: int) -> 'Offset3D':
+        return Offset3D(self.z * multiply_by, self.offset.times(multiply_by))
 
     def manhattan_distance(self) -> int:
         return abs(self.z) + self.offset.manhattan_distance()
