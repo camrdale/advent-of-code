@@ -2,7 +2,7 @@ from collections import defaultdict
 import collections.abc
 from enum import IntEnum
 import heapq
-from typing import NamedTuple, Self
+from typing import NamedTuple, Self, Any
 
 
 class Offset(NamedTuple):
@@ -91,6 +91,12 @@ class Coordinate(NamedTuple):
     @classmethod
     def from_text(cls, text: str) -> Self:
         return cls(*map(int, text.split(',')))
+
+    def __lt__(self, other: Any) -> bool:
+        """Sort by 'reading order', reading left to right, then top to bottom."""
+        if type(other) != Coordinate:
+            raise ValueError(f'Unexpected {other}')
+        return (self.y, self.x) < (other.y, other.x)
 
 
 class Offset3D(NamedTuple):

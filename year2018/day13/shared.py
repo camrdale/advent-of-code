@@ -1,4 +1,4 @@
-from typing import NamedTuple, Any
+from typing import NamedTuple
 
 from aoc.map import ParsedMap, Coordinate, Direction
 
@@ -41,11 +41,6 @@ class Cart(NamedTuple):
                 return self.direction.right()
             case _:
                 raise ValueError(f'Unexpected turn count: {self.turn_count}')
-
-    def __lt__(self, other: Any) -> bool:
-        if type(other) != Cart:
-            raise ValueError(f'Unexpected {other}')
-        return (self.location.y, self.location.x) < (other.location.y, other.location.x)
 
 
 class CartMap(ParsedMap):
