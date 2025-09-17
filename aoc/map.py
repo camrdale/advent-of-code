@@ -2,6 +2,7 @@ from collections import defaultdict
 import collections.abc
 from enum import IntEnum
 import heapq
+import sys
 from typing import NamedTuple, Self, Any
 
 
@@ -157,10 +158,10 @@ class Path(NamedTuple):
 
 class UnknownMap:
     def __init__(self, save_features: str = ''):
-        self.min_x = 0
-        self.min_y = 0
-        self.max_x = 0
-        self.max_y = 0
+        self.min_x = sys.maxsize
+        self.min_y = sys.maxsize
+        self.max_x = -sys.maxsize
+        self.max_y = -sys.maxsize
         self.save_features = save_features
         self.features: dict[str, set[Coordinate]] = defaultdict(set)
     
