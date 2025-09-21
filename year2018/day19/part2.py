@@ -2,7 +2,8 @@ from aoc.input import InputParser
 from aoc import log
 from aoc.runner import Part
 
-from year2018.day19.shared import Computer
+from year2018.chronal import Computer
+from year2018.day19.shared import run_optimized
 
 
 class Part2(Part):
@@ -14,7 +15,7 @@ class Part2(Part):
         registers = {i: 0 for i in range(6)}
         registers[0] = 1
 
-        computer.run_optimized(registers)
+        run_optimized(computer, registers)
 
         log.log(log.RESULT, f'The registers after the program finishes: {registers}')
         return registers[0]
