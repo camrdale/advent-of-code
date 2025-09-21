@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-from aoc import log
-
 
 class Operation(ABC):
     def __init__(self, a: int, b: int, c: int) -> None:
@@ -118,15 +116,16 @@ class Computer:
                 continue
             op, a, b, c = line.split()
             self.instructions.append(OPERATIONS[op](int(a), int(b), int(c)))
+        self.instruction = 0
+        self.num_executed = 0
 
     def run(self, registers: dict[int, int], run_until_instruction: int | None = None, debug: bool=False) -> None:
-        instruction = 0
         if debug:
-            print(f'{'Instruction':14}', ' '.join(f'{i:>10}' for i in range(6)))
+            print(f'{'Instruction':19}', ' '.join(f'{i:>15}' for i in range(6)))
         skip_steps = 0
-        while 0 <= instruction < len(self.instructions) and instruction != run_until_instruction:
+        while 0 <= self.instruction < len(self.instructions) and self.instruction != run_until_instruction:
             if self.instruction_register is not None:
-                registers[self.instruction_register] = instruction
+                registers[self.instruction_register] = self.instruction
 
             if debug:
                 if skip_steps > 0:
@@ -134,8 +133,8 @@ class Computer:
                 else:
                     while True:
                         steps = input(
-                            f'{self.instructions[instruction]!r:15}'
-                            + ' '.join(f'{registers[i]:10,}' for i in range(6))
+                            f'{self.instructions[self.instruction]!r:20}'
+                            + ' '.join(f'{registers[i]:15,}' for i in range(6))
                             + ' $ ')
                         if not steps:
                             break
@@ -146,13 +145,9 @@ class Computer:
                             _, reg, val = steps.split()
                             registers[int(reg)] = int(val)
 
-            if instruction == len(self.instructions) - 1:
-                log.log(log.DEBUG,
-                    f'{self.instructions[instruction]!r:15}'
-                    + ' '.join(f'{registers[i]:10,}' for i in range(6)))
-
-            self.instructions[instruction].apply(registers)
+            self.instructions[self.instruction].apply(registers)
+            self.num_executed += 1
 
             if self.instruction_register is not None:
-                instruction = registers[self.instruction_register]
-            instruction += 1
+                self.instruction = registers[self.instruction_register]
+            self.instruction += 1
