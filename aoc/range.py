@@ -53,8 +53,14 @@ class Range(NamedTuple):
         """Return a new range offset from this one by delta."""
         return Range(self.start + delta, self.end + delta, self.closed_end)
 
-    def split(self, value: int) -> 'tuple[Range|None, Range|None]':
-        """Split this range at value, returning up to two new Ranges. The second range will start at value."""
+    def split(self, value: int | None = None) -> 'tuple[Range|None, Range|None]':
+        """Split this range, returning up to two new Ranges.
+        
+        The split will be at value, such that the second range will start at value.
+        If value is not specified, the split will be in the middle of the range.
+        """
+        if value is None:
+            value = (self.start + self.end) // 2 + 1
         lower_range = None
         upper_range = None
         if value > self.start:
@@ -75,6 +81,14 @@ class Range(NamedTuple):
         if other.end == self.end:
             closed_end = max(self.closed_end, other.closed_end)
         return Range(start, end, closed_end)
+
+    def closest_to(self, value: int) -> int:
+        """Return the closest to the value that is in the range."""
+        if value < self.start:
+            return self.start
+        elif value >= self.end:
+            return self.end - (1 if not self.closed_end else 0)
+        return value
 
     def __repr__(self) -> str:
         return f'[{self.start},{self.end}{"]" if self.closed_end else ")"}'
