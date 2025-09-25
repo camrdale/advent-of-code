@@ -16,7 +16,7 @@ class Part2(Part):
             rows.append([n >> i & 1 for n in l for i in range(7,-1,-1)])
 
         # Build a disjoint set structure, using the row and column to identify the squares.
-        disjoint_set = DisjointSet()
+        disjoint_set: DisjointSet[tuple[int, int]] = DisjointSet()
         for row in range(128):
             for column in range(128):
                 if not rows[row][column]:

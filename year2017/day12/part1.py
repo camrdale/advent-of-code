@@ -9,7 +9,7 @@ class Part1(Part):
     def run(self, parser: InputParser) -> int:
         input = parser.get_input()
 
-        disjoint_set = DisjointSet()
+        disjoint_set: DisjointSet[int] = DisjointSet()
         for line in input:
             left, right = line.split(' <-> ')
             node = int(left)

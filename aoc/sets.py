@@ -1,4 +1,5 @@
-from typing import Hashable
+from collections.abc import Hashable
+from typing import TypeVar
 
 
 class DisjointSetNode:
@@ -10,18 +11,21 @@ class DisjointSetNode:
         self.size = 1
 
 
-class DisjointSet:
+T = TypeVar('T', bound=Hashable)
+
+
+class DisjointSet[T]:
     """Representation of a disjoint set as a forest of parent pointer trees."""
 
     def __init__(self) -> None:
-        self.nodes: dict[Hashable, DisjointSetNode] = {}
+        self.nodes: dict[T, DisjointSetNode] = {}
 
-    def add(self, node_id: Hashable) -> None:
+    def add(self, node_id: T) -> None:
         """Add a node identified by node_id to the forest as a new 1-element set."""
         if node_id not in self.nodes:
             self.nodes[node_id] = DisjointSetNode()
 
-    def find(self, node_id: Hashable) -> DisjointSetNode:
+    def find(self, node_id: T) -> DisjointSetNode:
         """Find the root of the set that contains the node identified by node_id."""
         node = self.nodes[node_id]
 
@@ -38,7 +42,7 @@ class DisjointSet:
 
         return root
 
-    def union(self, node_a_id: Hashable, node_b_id: Hashable) -> None:
+    def union(self, node_a_id: T, node_b_id: T) -> None:
         """Merge the sets identified by two node ids."""
         # Find the root of the trees for each node.
         root_node_a = self.find(node_a_id)
