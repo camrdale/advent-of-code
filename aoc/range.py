@@ -49,6 +49,14 @@ class Range(NamedTuple):
             return False
         return True
     
+    def contains_value(self, value: int) -> bool:
+        """Returns true if this Range contains the value."""
+        if self.start > value:
+            return False
+        if self.end - (1 if not self.closed_end else 0) < value:
+            return False
+        return True
+    
     def offset(self, delta: int) -> 'Range':
         """Return a new range offset from this one by delta."""
         return Range(self.start + delta, self.end + delta, self.closed_end)
