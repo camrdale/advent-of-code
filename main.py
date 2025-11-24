@@ -106,8 +106,8 @@ def run_all(only_year: int|None = None):
 
 
 if __name__ == '__main__':
-    # run_today(year=2020)
-    run_day(2020, 23)
+    run_today(year=2020)
+    # run_day(2020, 1)
     # run_all(only_year=2020)
     log.set_log_level(log.INFO)
     # run_part(2020, 2, 2)
