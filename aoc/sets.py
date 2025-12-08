@@ -61,3 +61,7 @@ class DisjointSet[T]:
     def size(self) -> int:
         """Returns the number of disjoint sets."""
         return sum(node.parent == node for node in self.nodes.values())
+
+    def sizes(self) -> list[int]:
+        """Returns the sizes of all the disjoint sets."""
+        return [node.size for node in self.nodes.values() if node.parent == node]
