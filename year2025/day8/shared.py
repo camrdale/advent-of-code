@@ -5,6 +5,7 @@ from typing import NamedTuple, Self
 
 
 class Connection(NamedTuple):
+    # Distance is first so that connections can be sorted by increasing distance
     distance_squared: int
     node_a: Coordinate3D
     node_b: Coordinate3D
@@ -32,5 +33,6 @@ class Connection(NamedTuple):
             boxes.append(node)
             sets.add(node)
 
+        # Sort so the shortest connections are first in the list
         connections.sort()
         return sets, connections
